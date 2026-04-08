@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Java Interview Prep — Senior Backend</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <a class="logo" href="#" onclick="goHome();return false;">Java<em>Prep</em></a>
+  <div class="nsearch">
+    <span class="nsearch-icon">⌕</span>
+    <input type="text" id="gSearch" placeholder="Search topics or questions…" oninput="onSearch()" autocomplete="off"/>
+  </div>
+  <span class="nmeta" id="navMeta">0 Q · 17 topics</span>
+</nav>
+
+<!-- APP -->
+<div id="mainApp">
+
+  <!-- HOME -->
+  <div id="homeView">
+    <div class="hero">
+      <div class="hero-glow"></div>
+      <div class="hero-inner">
+        <div class="hero-chip">📚 Java Backend Interview Guide</div>
+        <h1>Master your<br><span class="ca">Java interview</span><br>with <span class="cg">confidence</span></h1>
+        <p class="hero-sub">Full question sets across 17 universally-asked senior backend topics — every answer included.</p>
+        <div class="filter-row" id="filterRow">
+          <button class="fp on" onclick="setF('all',this)">All</button>
+          <button class="fp" onclick="setF('java',this)">Java Core</button>
+          <button class="fp" onclick="setF('spring',this)">Spring</button>
+          <button class="fp" onclick="setF('data',this)">Data &amp; DB</button>
+          <button class="fp" onclick="setF('infra',this)">Infra &amp; Cloud</button>
+          <button class="fp" onclick="setF('arch',this)">Architecture</button>
+          <button class="fp" onclick="setF('test',this)">Testing</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="statsbar">
+      <div class="sbi"><span class="sbn" id="totalQ">0</span><span class="sbl">Questions</span></div>
+      <div class="sbi"><span class="sbn">17</span><span class="sbl">Topics</span></div>
+      <div class="sbi"><span class="sbn">3</span><span class="sbl">Difficulty levels</span></div>
+    </div>
+
+    <div class="wrap">
+      <div class="sec-row">
+        <span class="sec-lbl" id="gridLbl">All Topics — 0</span>
+      </div>
+      <div class="tgrid" id="topicGrid"></div>
+    </div>
+  </div>
+
+  <!-- TOPIC DETAIL -->
+  <div id="topicView">
+    <div class="wrap" style="padding-top:70px;">
+      <button class="back" onclick="goHome()">← All topics</button>
+      <div id="topicContent"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Topic Data Files -->
+<script src="data/java.js"></script>
+<script src="data/spring.js"></script>
+<script src="data/hibernate.js"></script>
+<script src="data/threads.js"></script>
+<script src="data/sql.js"></script>
+<script src="data/rest.js"></script>
+<script src="data/redis.js"></script>
+<script src="data/kafka.js"></script>
+<script src="data/hld.js"></script>
+<script src="data/microservices.js"></script>
+<script src="data/docker.js"></script>
+<script src="data/aws.js"></script>
+<script src="data/testing.js"></script>
+<script src="data/patterns.js"></script>
+<script src="data/solid.js"></script>
+<script src="data/maven.js"></script>
+<script src="data/dsa.js"></script>
+
+<!-- Application Logic -->
+<script src="app.js"></script>
+</body>
+</html>
