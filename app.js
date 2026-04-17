@@ -18,7 +18,7 @@ const SECTION_CONFIG = {
   frontend: {
     chip: '📚 Frontend Interview Guide',
     heading: 'Master Your <span class="ca">Frontend</span> Interview with <span class="cg">Confidence</span>',
-    subheading: 'Learn 479 frontend Q&As on JavaScript, React, Next.js, and modern web development.',
+    subheading: 'Learn 483 frontend Q&As on JavaScript, React, Next.js, and modern web development.',
     categories: { all: 'All', javascript: 'JavaScript', react: 'React', nextjs: 'Next.js' }
   },
   backend: {
@@ -141,7 +141,7 @@ function renderLanding() {
         <div class="lcard-icon">⚛️</div>
         <div class="lcard-title">Frontend</div>
         <div class="lcard-topics">3 topics</div>
-        <div class="lcard-questions">479 Q&As</div>
+        <div class="lcard-questions">483 Q&As</div>
         <div class="lcard-desc">JavaScript, React, Next.js</div>
         <div class="lcard-btn">Explore →</div>
       </div>
