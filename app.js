@@ -18,13 +18,13 @@ const SECTION_CONFIG = {
   frontend: {
     chip: '📚 Frontend Interview Guide',
     heading: 'Master Your <span class="ca">Frontend</span> Interview with <span class="cg">Confidence</span>',
-    subheading: 'Learn 140+ frontend Q&As on JavaScript, React, and modern web development.',
+    subheading: 'Learn 379 frontend Q&As on JavaScript, React, and modern web development.',
     categories: { all: 'All', javascript: 'JavaScript', react: 'React' }
   },
   backend: {
     chip: '📚 Backend Interview Guide',
     heading: 'Master Your <span class="ca">Backend</span> Interview with <span class="cg">Confidence</span>',
-    subheading: 'Learn 530+ backend Q&As across Java, Spring, infrastructure, and advanced architecture.',
+    subheading: 'Learn 681 backend Q&As across Java, Spring, infrastructure, and advanced architecture.',
     categories: { all: 'All', core: 'Core Backend', advanced: 'Advanced Topics', infra: 'Infrastructure & Data' }
   }
 };
@@ -141,15 +141,15 @@ function renderLanding() {
         <div class="lcard-icon">⚛️</div>
         <div class="lcard-title">Frontend</div>
         <div class="lcard-topics">2 topics</div>
-        <div class="lcard-questions">140+ Q&As</div>
+        <div class="lcard-questions">379 Q&As</div>
         <div class="lcard-desc">JavaScript, React</div>
         <div class="lcard-btn">Explore →</div>
       </div>
       <div class="lcard" onclick="showSection('backend')">
         <div class="lcard-icon">☕</div>
         <div class="lcard-title">Backend</div>
-        <div class="lcard-topics">23 topics</div>
-        <div class="lcard-questions">530+ Q&As</div>
+        <div class="lcard-topics">25 topics</div>
+        <div class="lcard-questions">681 Q&As</div>
         <div class="lcard-desc">Java, Spring, AWS</div>
         <div class="lcard-btn">Explore →</div>
       </div>
