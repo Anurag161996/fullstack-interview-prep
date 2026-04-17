@@ -538,10 +538,7 @@ SEC_JS.qs.push(
    a:"The <code>arguments</code> object is an <strong>array-like</strong> (not real array) object available in regular functions containing all passed arguments.<br><pre>function test(a, b) {\n  console.log(arguments);     // [1, 2, 3] (array-like)\n  console.log(arguments[0]);  // 1\n  console.log(arguments.length); // 3\n}\ntest(1, 2, 3);\n\n// Arrow functions do NOT have arguments\nconst arrow = () => console.log(arguments); // ReferenceError</pre><br><strong>Rest parameters vs arguments:</strong><br><pre>// Rest — real array, named parameters\nfunction sum(...nums) { return nums.reduce((a,b)=>a+b, 0); }\n\n// arguments — array-like, all params\nfunction sum2() {\n  return [...arguments].reduce((a,b)=>a+b, 0); // must convert\n}</pre><br><strong>Converting arguments to array:</strong><br><pre>Array.from(arguments);\nArray.prototype.slice.call(arguments);\n[...arguments];</pre>"},
 
   {q:"What is Function.prototype.length and how is it used?",d:"medium",
-   a:"<code>function.length</code> returns the number of <strong>formal parameters</strong> (not including rest parameters).<br><pre>function test(a, b, c) {}
-test.length; // 3\n\nfunction withRest(a, b, ...rest) {}
-withRest.length; // 2 — rest parameter NOT counted!\n\nfunction withDefaults(a, b = 10, c) {}
-withDefaults.length; // 1 — only 'a' (params after first default not counted!)\n\n// Use case: checking function arity (expected arguments)\nfunction validateArgs(fn, ...args) {\n  if (args.length < fn.length) throw new Error('Not enough arguments');\n}</pre>"},
+   a:"<code>function.length</code> returns the number of <strong>formal parameters</strong> (not including rest parameters).<br><pre>function test(a, b, c) {}\ntest.length; // 3\n\nfunction withRest(a, b, ...rest) {}\nwithRest.length; // 2 — rest parameter NOT counted!\n\nfunction withDefaults(a, b = 10, c) {}\nwithDefaults.length; // 1 — only 'a' (params after first default not counted!)\n\n// Use case: checking function arity (expected arguments)\nfunction validateArgs(fn, ...args) {\n  if (args.length < fn.length) throw new Error('Not enough arguments');\n}</pre>"},
 
   {q:"What is a constructor function and how does the `new` keyword work?",d:"medium",
    a:"A <strong>constructor function</strong> is a regular function called with <code>new</code> that creates and initialises a new object.<br><br><code>new</code> does 4 things:<ol><li>Create empty object</li><li>Set its prototype to constructor.prototype</li><li>Call constructor with <code>this</code> = new object</li><li>Return the object (unless constructor returns an object)</li></ol><pre>function User(name, age) {\n  this.name = name;\n  this.age = age;\n}\nUser.prototype.greet = function() { return 'Hi, ' + this.name; };\n\nconst u = new User('Alice', 30);\nconsole.log(u.name);    // 'Alice'\nconsole.log(u.greet()); // 'Hi, Alice'\nconsole.log(u instanceof User); // true\n\n// Without new — 'this' is window/global\nconst u2 = User('Bob', 25); // window.name = 'Bob' — oops!</pre>"},
@@ -572,6 +569,7 @@ withDefaults.length; // 1 — only 'a' (params after first default not counted!)
 );
 
 
+SEC_JS.qs.push(
   // ── Error Handling & Built-in Types ──────────────────────────────────────
   {q:"What are the different Error types in JavaScript?",d:"medium",
    a:"JavaScript has multiple built-in Error types:<br><pre>// Error — base class\ntry { throw new Error('generic'); } catch(e) { e instanceof Error; }\n\n// ReferenceError — undeclared variable\nundefinedVariable; // ReferenceError\n\n// TypeError — wrong type\nnull.property;      // TypeError\nundefined();        // TypeError\n\n// SyntaxError — invalid syntax (at parse time)\n// eval('const a = ;'); // SyntaxError\n\n// RangeError — out of range\nnew Array(-1); // RangeError\n(1.5).toFixed(100); // RangeError\n\n// URIError — invalid URI\ndecodeURIComponent('%'); // URIError\n\n// EvalError — rare, eval() related\n\n// Custom error\nclass AppError extends Error {\n  constructor(msg, code) {\n    super(msg);\n    this.name = 'AppError';\n    this.code = code;\n  }\n}</pre>"},
@@ -595,1017 +593,147 @@ withDefaults.length; // 1 — only 'a' (params after first default not counted!)
    a:"Every constructor has a <code>.prototype</code> property. That prototype object has a <code>.constructor</code> property pointing back to the constructor.<br><pre>function User(name) { this.name = name; }\n\nUser.prototype.constructor === User; // true\n\nconst u = new User('Alice');\nu.constructor === User; // true — found via prototype chain\n\n// Problem: if you overwrite prototype, constructor is lost\nUser.prototype = { greet() { return 'hi'; } };\nUser.prototype.constructor === User; // false!\n\n// Fix\nUser.prototype.constructor = User; // or:\nUser.prototype = {\n  constructor: User,\n  greet() { return 'hi'; }\n};</pre>"},
 
   {q:"How do you check if a property exists safely?",d:"medium",
-   a:"<strong>Multiple approaches (safest first):</strong><br><pre>const obj = { name: 'Alice' };\n\n// 1. Object.hasOwn (ES2022) — recommended\nObject.hasOwn(obj, 'name'); // true\n\n// 2. .hasOwnProperty() — needs null check\nobj.hasOwnProperty?.('name') || false;\n\n// 3. in operator — includes inherited\n('name' in obj); // true\n\n// 4. typeof — works even if undefined\n(typeof obj.name !== 'undefined'); // true\n\n// Safe with Object.create(null)\nconst bare = Object.create(null);\nbare.x = 1;\nObject.hasOwn(bare, 'x'); // true — safe!\nbare.hasOwnProperty('x'); // TypeError!\n\n// Safe with overridden hasOwnProperty\nconst evil = { hasOwnProperty: () => false };\nObject.hasOwn(evil, 'x'); // true — safe!\nevil.hasOwnProperty('x'); // false — wrong!</pre>"}
+   a:"<strong>Multiple approaches (safest first):</strong><br><pre>const obj = { name: 'Alice' };\n\n// 1. Object.hasOwn (ES2022) — recommended\nObject.hasOwn(obj, 'name'); // true\n\n// 2. .hasOwnProperty() — needs null check\nobj.hasOwnProperty?.('name') || false;\n\n// 3. in operator — includes inherited\n('name' in obj); // true\n\n// 4. typeof — works even if undefined\n(typeof obj.name !== 'undefined'); // true\n\n// Safe with Object.create(null)\nconst bare = Object.create(null);\nbare.x = 1;\nObject.hasOwn(bare, 'x'); // true — safe!\nbare.hasOwnProperty('x'); // TypeError!\n\n// Safe with overridden hasOwnProperty\nconst evil = { hasOwnProperty: () => false };\nObject.hasOwn(evil, 'x'); // true — safe!\nevil.hasOwnProperty('x'); // false — wrong!</pre>"},
 
     // ── BATCH 5: Function Fundamentals ──────────────────────────────────────
     {q:"What is the arguments object?",d:"easy",
-     a:"<strong>The <code>arguments</code> object</strong> is an array-like object available inside function bodies containing all passed arguments.<br><pre>function sum() {
-  console.log(arguments); // array-like object
-  let total = 0;
-  for (let i = 0; i < arguments.length; i++) {
-    total += arguments[i];
-  }
-  return total;
-}
-sum(1, 2, 3); // 6</pre><br><strong>NOT a real array:</strong><br><pre>arguments instanceof Array; // false
-arguments.length; // number of args
-Arguments.isArray(arguments); // false</pre><br><strong>Convert to array:</strong><br><pre>const arr = Array.from(arguments);
-const arr2 = [...arguments];
-const arr3 = Array.prototype.slice.call(arguments);</pre><br><strong>Note:</strong> arrow functions don't have <code>arguments</code> — use rest parameters instead (<code>(...args) => {}</code>)."},
+     a:"<strong>The <code>arguments</code> object</strong> is an array-like object available inside function bodies containing all passed arguments.<br><pre>function sum() {\n  console.log(arguments); // array-like object\n  let total = 0;\n  for (let i = 0; i < arguments.length; i++) {\n    total += arguments[i];\n  }\n  return total;\n}\nsum(1, 2, 3); // 6</pre><br><strong>NOT a real array:</strong><br><pre>arguments instanceof Array; // false\narguments.length; // number of args\nArguments.isArray(arguments); // false</pre><br><strong>Convert to array:</strong><br><pre>const arr = Array.from(arguments);\nconst arr2 = [...arguments];\nconst arr3 = Array.prototype.slice.call(arguments);</pre><br><strong>Note:</strong> arrow functions don't have <code>arguments</code> — use rest parameters instead (<code>(...args) => {}</code>)."},
     {q:"What is the difference between arguments object and rest parameters?",d:"medium",
-     a:"<strong>arguments object:</strong> array-like, includes all arguments, available in all functions (except arrows).<br><strong>Rest parameters:</strong> real array, explicitly named, only in arrow functions or with <code>...</code> syntax.<br><pre>// arguments object
-function foo() {
-  console.log(arguments); // Arguments {0: 'a', 1: 'b'}
-  console.log(typeof arguments[Symbol.iterator]); // function (iterable)
-}
-foo('a', 'b');
-
-// Rest parameters
-function bar(...args) {
-  console.log(args); // Array ['a', 'b']
-  console.log(args instanceof Array); // true
-}
-bar('a', 'b');
-
-// Named parameters + rest
-function baz(first, ...rest) {
-  console.log(first); // 'a'
-  console.log(rest);  // ['b', 'c']
-}
-baz('a', 'b', 'c');</pre><br><strong>Advantages of rest:</strong> real array, clearer intent, works with arrows."},
+     a:"<strong>arguments object:</strong> array-like, includes all arguments, available in all functions (except arrows).<br><strong>Rest parameters:</strong> real array, explicitly named, only in arrow functions or with <code>...</code> syntax.<br><pre>// arguments object\nfunction foo() {\n  console.log(arguments); // Arguments {0: 'a', 1: 'b'}\n  console.log(typeof arguments[Symbol.iterator]); // function (iterable)\n}\nfoo('a', 'b');\n\n// Rest parameters\nfunction bar(...args) {\n  console.log(args); // Array ['a', 'b']\n  console.log(args instanceof Array); // true\n}\nbar('a', 'b');\n\n// Named parameters + rest\nfunction baz(first, ...rest) {\n  console.log(first); // 'a'\n  console.log(rest);  // ['b', 'c']\n}\nbaz('a', 'b', 'c');</pre><br><strong>Advantages of rest:</strong> real array, clearer intent, works with arrows."},
     {q:"What is Function.prototype.length (arity)?",d:"medium",
-     a:"<strong>Function.prototype.length</strong> returns the number of parameters (arity) a function expects, <strong>not</strong> the number passed.<br><pre>function sum(a, b, c) { return a + b + c; }
-sum.length; // 3 — expects 3 parameters
-
-sum(1, 2, 3, 4, 5); // 6 — call with 5 args, but length is 3
-
-// Rest parameters not counted
-function rest(a, b, ...args) {}
-rest.length; // 2 — only counts a, b
-
-// Default parameters stop the count
-function defaults(a, b = 10, c) {}
-defaults.length; // 1 — stops at first default</pre><br><strong>Use case:</strong> function introspection, validating expected parameters."},
+     a:"<strong>Function.prototype.length</strong> returns the number of parameters (arity) a function expects, <strong>not</strong> the number passed.<br><pre>function sum(a, b, c) { return a + b + c; }\nsum.length; // 3 — expects 3 parameters\n\nsum(1, 2, 3, 4, 5); // 6 — call with 5 args, but length is 3\n\n// Rest parameters not counted\nfunction rest(a, b, ...args) {}\nrest.length; // 2 — only counts a, b\n\n// Default parameters stop the count\nfunction defaults(a, b = 10, c) {}\ndefaults.length; // 1 — stops at first default</pre><br><strong>Use case:</strong> function introspection, validating expected parameters."},
     {q:"What is the `new` keyword and constructor functions?",d:"medium",
-     a:"<strong>The <code>new</code> keyword</strong> creates a new object and sets it as <code>this</code>, then returns it.<br><pre>function User(name, age) {
-  this.name = name;  // set on new object
-  this.age = age;
-}
-const u = new User('Alice', 30);
-console.log(u.name); // 'Alice'
-
-// What new does:
-// 1. Create new object
-// 2. Set prototype: u.__proto__ === User.prototype
-// 3. Call User with this = u
-// 4. Return u (unless constructor returns an object)</pre><br><strong>Edge case:</strong> constructor returning an object:<br><pre>function Counter() {
-  this.count = 0;
-  return { count: 999 }; // returns this object instead
-}
-const c = new Counter();
-c.count; // 999 — the returned object
-
-function Counter2() {
-  this.count = 0;
-  return 42; // primitive — ignored, returns this
-}
-const c2 = new Counter2();
-c2.count; // 0</pre>"},
+     a:"<strong>The <code>new</code> keyword</strong> creates a new object and sets it as <code>this</code>, then returns it.<br><pre>function User(name, age) {\n  this.name = name;  // set on new object\n  this.age = age;\n}\nconst u = new User('Alice', 30);\nconsole.log(u.name); // 'Alice'\n\n// What new does:\n// 1. Create new object\n// 2. Set prototype: u.__proto__ === User.prototype\n// 3. Call User with this = u\n// 4. Return u (unless constructor returns an object)</pre><br><strong>Edge case:</strong> constructor returning an object:<br><pre>function Counter() {\n  this.count = 0;\n  return { count: 999 }; // returns this object instead\n}\nconst c = new Counter();\nc.count; // 999 — the returned object\n\nfunction Counter2() {\n  this.count = 0;\n  return 42; // primitive — ignored, returns this\n}\nconst c2 = new Counter2();\nc2.count; // 0</pre>"},
     {q:"What is a variadic function?",d:"easy",
-     a:"<strong>A variadic function</strong> accepts a variable number of arguments.<br><pre>// Using rest parameters (modern)
-function sum(...nums) {
-  return nums.reduce((a, b) => a + b, 0);
-}
-sum(1, 2, 3, 4, 5); // 15
-
-// Using arguments object (legacy)
-function product() {
-  let result = 1;
-  for (let i = 0; i < arguments.length; i++) {
-    result *= arguments[i];
-  }
-  return result;
-}
-product(2, 3, 4); // 24</pre><br><strong>Common patterns:</strong> <code>console.log()</code>, <code>Array()</code>, <code>Object.assign()</code>."},
+     a:"<strong>A variadic function</strong> accepts a variable number of arguments.<br><pre>// Using rest parameters (modern)\nfunction sum(...nums) {\n  return nums.reduce((a, b) => a + b, 0);\n}\nsum(1, 2, 3, 4, 5); // 15\n\n// Using arguments object (legacy)\nfunction product() {\n  let result = 1;\n  for (let i = 0; i < arguments.length; i++) {\n    result *= arguments[i];\n  }\n  return result;\n}\nproduct(2, 3, 4); // 24</pre><br><strong>Common patterns:</strong> <code>console.log()</code>, <code>Array()</code>, <code>Object.assign()</code>."},
     {q:"What are function invocation modes and how does `this` change?",d:"hard",
-     a:"<strong>1. Function invocation:</strong> <code>this</code> = undefined (strict) or window (non-strict).<br><strong>2. Method invocation:</strong> <code>this</code> = object calling method.<br><strong>3. Constructor invocation (new):</strong> <code>this</code> = new object.<br><strong>4. Explicit binding (call/apply/bind):</strong> <code>this</code> = specified object.<br><pre>const obj = { name: 'obj', greet() { return this.name; } };
-const fn = obj.greet;
-
-// 1. Function invocation
-fn(); // undefined or 'window'
-
-// 2. Method invocation
-obj.greet(); // 'obj'
-
-// 3. Constructor invocation
-new fn(); // undefined (new object's property)
-
-// 4. Explicit binding
-fn.call(obj);   // 'obj'
-fn.apply(obj, []);
-const bound = fn.bind(obj);
-bound(); // 'obj'</pre>"},
+     a:"<strong>1. Function invocation:</strong> <code>this</code> = undefined (strict) or window (non-strict).<br><strong>2. Method invocation:</strong> <code>this</code> = object calling method.<br><strong>3. Constructor invocation (new):</strong> <code>this</code> = new object.<br><strong>4. Explicit binding (call/apply/bind):</strong> <code>this</code> = specified object.<br><pre>const obj = { name: 'obj', greet() { return this.name; } };\nconst fn = obj.greet;\n\n// 1. Function invocation\nfn(); // undefined or 'window'\n\n// 2. Method invocation\nobj.greet(); // 'obj'\n\n// 3. Constructor invocation\nnew fn(); // undefined (new object's property)\n\n// 4. Explicit binding\nfn.call(obj);   // 'obj'\nfn.apply(obj, []);\nconst bound = fn.bind(obj);\nbound(); // 'obj'</pre>"},
     {q:"What are the differences between call, apply, and bind?",d:"medium",
-     a:"<table style='width:100%;border-collapse:collapse'><tr><th style='text-align:left;padding:4px 8px'>Method</th><th style='padding:4px 8px'>Args format</th><th style='padding:4px 8px'>Execution</th></tr><tr><td style='padding:4px 8px'><code>call</code></td><td style='padding:4px 8px'>Individual</td><td style='padding:4px 8px'>Immediate</td></tr><tr><td style='padding:4px 8px'><code>apply</code></td><td style='padding:4px 8px'>Array</td><td style='padding:4px 8px'>Immediate</td></tr><tr><td style='padding:4px 8px'><code>bind</code></td><td style='padding:4px 8px'>Individual</td><td style='padding:4px 8px'>Returns function</td></tr></table><br><pre>function greet(greeting, punctuation) {
-  return greeting + ' ' + this.name + punctuation;
-}
-
-const person = { name: 'Alice' };
-
-// call — individual args, immediate
-greet.call(person, 'Hello', '!');    // 'Hello Alice!'
-
-// apply — array args, immediate
-greet.apply(person, ['Hi', '?']);    // 'Hi Alice?'
-
-// bind — returns new function
-const bound = greet.bind(person, 'Hey');
-bound('!'); // 'Hey Alice!'
-bound('?'); // 'Hey Alice?'</pre>"},
+     a:"<table style='width:100%;border-collapse:collapse'><tr><th style='text-align:left;padding:4px 8px'>Method</th><th style='padding:4px 8px'>Args format</th><th style='padding:4px 8px'>Execution</th></tr><tr><td style='padding:4px 8px'><code>call</code></td><td style='padding:4px 8px'>Individual</td><td style='padding:4px 8px'>Immediate</td></tr><tr><td style='padding:4px 8px'><code>apply</code></td><td style='padding:4px 8px'>Array</td><td style='padding:4px 8px'>Immediate</td></tr><tr><td style='padding:4px 8px'><code>bind</code></td><td style='padding:4px 8px'>Individual</td><td style='padding:4px 8px'>Returns function</td></tr></table><br><pre>function greet(greeting, punctuation) {\n  return greeting + ' ' + this.name + punctuation;\n}\n\nconst person = { name: 'Alice' };\n\n// call — individual args, immediate\ngreet.call(person, 'Hello', '!');    // 'Hello Alice!'\n\n// apply — array args, immediate\ngreet.apply(person, ['Hi', '?']);    // 'Hi Alice?'\n\n// bind — returns new function\nconst bound = greet.bind(person, 'Hey');\nbound('!'); // 'Hey Alice!'\nbound('?'); // 'Hey Alice?'</pre>"},
     {q:"What is currying?",d:"medium",
-     a:"<strong>Currying</strong> converts a function with multiple parameters into a series of functions with single parameters.<br><pre>// Regular function
-function add(a, b, c) { return a + b + c; }
-add(1, 2, 3); // 6
-
-// Curried version
-const curriedAdd = (a) => (b) => (c) => a + b + c;
-curriedAdd(1)(2)(3); // 6
-
-// Partial application
-const add1 = curriedAdd(1);
-const add1_2 = add1(2);
-add1_2(3); // 6
-
-// Generic currier
-function curry(fn) {
-  const arity = fn.length; // expected params
-  return function currier(...args) {
-    if (args.length >= arity) return fn(...args);
-    return (...nextArgs) => currier(...args, ...nextArgs);
-  };
-}
-
-const add2 = curry((a, b, c) => a + b + c);
-add2(1)(2)(3); // 6
-add2(1, 2)(3); // 6</pre>"},
+     a:"<strong>Currying</strong> converts a function with multiple parameters into a series of functions with single parameters.<br><pre>// Regular function\nfunction add(a, b, c) { return a + b + c; }\nadd(1, 2, 3); // 6\n\n// Curried version\nconst curriedAdd = (a) => (b) => (c) => a + b + c;\ncurriedAdd(1)(2)(3); // 6\n\n// Partial application\nconst add1 = curriedAdd(1);\nconst add1_2 = add1(2);\nadd1_2(3); // 6\n\n// Generic currier\nfunction curry(fn) {\n  const arity = fn.length; // expected params\n  return function currier(...args) {\n    if (args.length >= arity) return fn(...args);\n    return (...nextArgs) => currier(...args, ...nextArgs);\n  };\n}\n\nconst add2 = curry((a, b, c) => a + b + c);\nadd2(1)(2)(3); // 6\nadd2(1, 2)(3); // 6</pre>"},
 
     // ── BATCH 6: Error Handling & Built-in Types ──────────────────────────────
     {q:"What is the Error object and its properties?",d:"easy",
-     a:"<strong>Error object</strong> contains information about runtime errors.<br><pre>try {
-  throw new Error('Something went wrong');
-} catch (e) {
-  console.log(e.message);     // 'Something went wrong'
-  console.log(e.name);        // 'Error'
-  console.log(e.stack);       // stack trace
-}</pre><br><strong>Properties:</strong><ul><li><code>message</code> — error message</li><li><code>name</code> — error type (Error, TypeError, etc.)</li><li><code>stack</code> — stack trace (non-standard but widely supported)</li><li><code>cause</code> — original error (ES2022)</li></ul><br><pre>// Create custom error with cause
-try {
-  doSomething();
-} catch (e) {
-  throw new Error('High-level error', { cause: e });
-}</pre>"},
+     a:"<strong>Error object</strong> contains information about runtime errors.<br><pre>try {\n  throw new Error('Something went wrong');\n} catch (e) {\n  console.log(e.message);     // 'Something went wrong'\n  console.log(e.name);        // 'Error'\n  console.log(e.stack);       // stack trace\n}</pre><br><strong>Properties:</strong><ul><li><code>message</code> — error message</li><li><code>name</code> — error type (Error, TypeError, etc.)</li><li><code>stack</code> — stack trace (non-standard but widely supported)</li><li><code>cause</code> — original error (ES2022)</li></ul><br><pre>// Create custom error with cause\ntry {\n  doSomething();\n} catch (e) {\n  throw new Error('High-level error', { cause: e });\n}</pre>"},
     {q:"What are Error types: ReferenceError, TypeError, SyntaxError, RangeError?",d:"medium",
-     a:"<strong>ReferenceError:</strong> accessing undefined variable.<br><pre>console.log(undefinedVar); // ReferenceError: undefinedVar is not defined</pre><br><strong>TypeError:</strong> wrong type operation.<br><pre>null.property;        // TypeError
-'string'.toUpperCase(); // works (method on string)
-null.toUpperCase();   // TypeError: Cannot read property of null
-42(); // TypeError: 42 is not a function</pre><br><strong>SyntaxError:</strong> invalid syntax (parse-time error).<br><pre>// const x = ; // SyntaxError
-// eval('const a = ;'); // SyntaxError</pre><br><strong>RangeError:</strong> value out of valid range.<br><pre>new Array(-1);          // RangeError
-(1.5).toFixed(999);     // RangeError
-Decimal.prototype.toExponential(-1); // RangeError</pre><br><strong>URIError:</strong> invalid URI operation.<br><pre>decodeURIComponent('%');  // URIError: URI malformed</pre>"},
+     a:"<strong>ReferenceError:</strong> accessing undefined variable.<br><pre>console.log(undefinedVar); // ReferenceError: undefinedVar is not defined</pre><br><strong>TypeError:</strong> wrong type operation.<br><pre>null.property;        // TypeError\n'string'.toUpperCase(); // works (method on string)\nnull.toUpperCase();   // TypeError: Cannot read property of null\n42(); // TypeError: 42 is not a function</pre><br><strong>SyntaxError:</strong> invalid syntax (parse-time error).<br><pre>// const x = ; // SyntaxError\n// eval('const a = ;'); // SyntaxError</pre><br><strong>RangeError:</strong> value out of valid range.<br><pre>new Array(-1);          // RangeError\n(1.5).toFixed(999);     // RangeError\nDecimal.prototype.toExponential(-1); // RangeError</pre><br><strong>URIError:</strong> invalid URI operation.<br><pre>decodeURIComponent('%');  // URIError: URI malformed</pre>"},
     {q:"What is try...catch...finally flow control?",d:"medium",
-     a:"<strong>try...catch...finally:</strong> execute code, catch errors, guarantee cleanup.<br><pre>function test() {
-  try {
-    console.log('try');
-    throw new Error('boom');
-    console.log('after throw'); // not executed
-  } catch (e) {
-    console.log('catch:', e.message);
-    return 1; // catch block return
-  } finally {
-    console.log('finally'); // ALWAYS executes
-    return 2; // overrides catch return!
-  }
-}
-test(); // logs: try, catch: boom, finally; returns 2</pre><br><strong>Return from finally overrides catch!</strong><br><pre>// Correct pattern
-try {
-  doSomething();
-} finally {
-  cleanup(); // no return in finally
-}</pre><br><strong>Edge case: error in finally</strong><br><pre>try {
-  throw new Error('first');
-} finally {
-  throw new Error('second'); // overwrites first error
-}</pre>"},
+     a:"<strong>try...catch...finally:</strong> execute code, catch errors, guarantee cleanup.<br><pre>function test() {\n  try {\n    console.log('try');\n    throw new Error('boom');\n    console.log('after throw'); // not executed\n  } catch (e) {\n    console.log('catch:', e.message);\n    return 1; // catch block return\n  } finally {\n    console.log('finally'); // ALWAYS executes\n    return 2; // overrides catch return!\n  }\n}\ntest(); // logs: try, catch: boom, finally; returns 2</pre><br><strong>Return from finally overrides catch!</strong><br><pre>// Correct pattern\ntry {\n  doSomething();\n} finally {\n  cleanup(); // no return in finally\n}</pre><br><strong>Edge case: error in finally</strong><br><pre>try {\n  throw new Error('first');\n} finally {\n  throw new Error('second'); // overwrites first error\n}</pre>"},
     {q:"What is the window object and its key properties?",d:"medium",
-     a:"<strong>The window object</strong> is the global object in browsers, containing all global variables and functions.<br><pre>// Global scope
-var x = 5;
-window.x; // 5
-
-function greet() {}
-window.greet; // function
-
-// Window properties
-window.innerWidth;     // viewport width
-window.innerHeight;    // viewport height
-window.outerWidth;     // browser window width
-window.outerHeight;    // browser window height
-window.scrollX;        // horizontal scroll
-window.scrollY;        // vertical scroll
-window.document;       // DOM document
-window.location;       // URL info
-window.navigator;      // browser info
-window.history;        // back/forward
-window.localStorage;   // storage
-
-// Methods
-window.alert('msg');
-window.confirm('yes?');
-window.prompt('enter:');
-window.setTimeout(() => {}, 1000);
-window.fetch('/api');</pre><br><strong>Note:</strong> in strict mode, <code>this</code> inside functions is <code>undefined</code>, not <code>window</code>."},
+     a:"<strong>The window object</strong> is the global object in browsers, containing all global variables and functions.<br><pre>// Global scope\nvar x = 5;\nwindow.x; // 5\n\nfunction greet() {}\nwindow.greet; // function\n\n// Window properties\nwindow.innerWidth;     // viewport width\nwindow.innerHeight;    // viewport height\nwindow.outerWidth;     // browser window width\nwindow.outerHeight;    // browser window height\nwindow.scrollX;        // horizontal scroll\nwindow.scrollY;        // vertical scroll\nwindow.document;       // DOM document\nwindow.location;       // URL info\nwindow.navigator;      // browser info\nwindow.history;        // back/forward\nwindow.localStorage;   // storage\n\n// Methods\nwindow.alert('msg');\nwindow.confirm('yes?');\nwindow.prompt('enter:');\nwindow.setTimeout(() => {}, 1000);\nwindow.fetch('/api');</pre><br><strong>Note:</strong> in strict mode, <code>this</code> inside functions is <code>undefined</code>, not <code>window</code>."},
     {q:"What is the navigator object?",d:"easy",
-     a:"<strong>The navigator object</strong> contains browser and OS information.<br><pre>navigator.userAgent;    // 'Mozilla/5.0...'
-navigator.appName;      // 'Netscape'
-navigator.appVersion;   // version
-navigator.language;     // 'en-US'
-navigator.languages;    // ['en-US', 'en']
-navigator.platform;     // 'MacIntel', 'Win32'
-navigator.online;       // true/false (connection)
-navigator.onLine;       // same (alias)
-navigator.geolocation;  // Geolocation API
-navigator.permissions;  // Permissions API</pre><br><strong>Detect mobile:</strong><br><pre>const isMobile = navigator.userAgent.match(/Android|iPhone/i);</pre>"},
+     a:"<strong>The navigator object</strong> contains browser and OS information.<br><pre>navigator.userAgent;    // 'Mozilla/5.0...'\nnavigator.appName;      // 'Netscape'\nnavigator.appVersion;   // version\nnavigator.language;     // 'en-US'\nnavigator.languages;    // ['en-US', 'en']\nnavigator.platform;     // 'MacIntel', 'Win32'\nnavigator.online;       // true/false (connection)\nnavigator.onLine;       // same (alias)\nnavigator.geolocation;  // Geolocation API\nnavigator.permissions;  // Permissions API</pre><br><strong>Detect mobile:</strong><br><pre>const isMobile = navigator.userAgent.match(/Android|iPhone/i);</pre>"},
     {q:"What is the location object?",d:"easy",
-     a:"<strong>The location object</strong> contains the current URL and methods for navigation.<br><pre>// Full URL: https://example.com:8080/path/page?id=1#section
-
-location.href;      // 'https://example.com:8080/path/page?id=1#section'
-location.protocol;  // 'https:'
-location.hostname;  // 'example.com'
-location.port;      // '8080'
-location.pathname;  // '/path/page'
-location.search;    // '?id=1'
-location.hash;      // '#section'
-location.origin;    // 'https://example.com:8080'
-
-// Navigation methods
-location.assign('/new-url');     // load new page (history)
-location.replace('/new-url');    // replace current (no history)
-location.reload();               // reload current page
-location.reload(true);           // force refresh (bypass cache)</pre>"},
+     a:"<strong>The location object</strong> contains the current URL and methods for navigation.<br><pre>// Full URL: https://example.com:8080/path/page?id=1#section\n\nlocation.href;      // 'https://example.com:8080/path/page?id=1#section'\nlocation.protocol;  // 'https:'\nlocation.hostname;  // 'example.com'\nlocation.port;      // '8080'\nlocation.pathname;  // '/path/page'\nlocation.search;    // '?id=1'\nlocation.hash;      // '#section'\nlocation.origin;    // 'https://example.com:8080'\n\n// Navigation methods\nlocation.assign('/new-url');     // load new page (history)\nlocation.replace('/new-url');    // replace current (no history)\nlocation.reload();               // reload current page\nlocation.reload(true);           // force refresh (bypass cache)</pre>"},
     {q:"What is Object.hasOwn() vs hasOwnProperty()?",d:"medium",
-     a:"<strong>Object.hasOwn() (ES2022):</strong> recommended, safe method to check own properties.<br><strong>hasOwnProperty():</strong> old method, can be overridden.<br><pre>const obj = { name: 'Alice' };
-
-// Modern (safe)
-Object.hasOwn(obj, 'name'); // true
-
-// Legacy (works but can be overridden)
-obj.hasOwnProperty('name'); // true
-
-// Problem with hasOwnProperty
-const evil = { hasOwnProperty: () => false };
-evil.hasOwnProperty('x');     // false (wrong!)
-Object.hasOwn(evil, 'x');     // true (correct)
-
-// Object.create(null) has no hasOwnProperty
-const bare = Object.create(null);
-bare.x = 1;
-bare.hasOwnProperty('x');  // TypeError!
-Object.hasOwn(bare, 'x');  // true (safe)</pre>"}
+     a:"<strong>Object.hasOwn() (ES2022):</strong> recommended, safe method to check own properties.<br><strong>hasOwnProperty():</strong> old method, can be overridden.<br><pre>const obj = { name: 'Alice' };\n\n// Modern (safe)\nObject.hasOwn(obj, 'name'); // true\n\n// Legacy (works but can be overridden)\nobj.hasOwnProperty('name'); // true\n\n// Problem with hasOwnProperty\nconst evil = { hasOwnProperty: () => false };\nevil.hasOwnProperty('x');     // false (wrong!)\nObject.hasOwn(evil, 'x');     // true (correct)\n\n// Object.create(null) has no hasOwnProperty\nconst bare = Object.create(null);\nbare.x = 1;\nbare.hasOwnProperty('x');  // TypeError!\nObject.hasOwn(bare, 'x');  // true (safe)</pre>"},
   
     // ── BATCH 7: Advanced Object & Property Management ──────────────────────
     {q:"What is Object.defineProperty()?",d:"hard",
-     a:"<strong>Object.defineProperty()</strong> creates or modifies a property with precise control via property descriptors.<br><pre>const obj = {};
-
-Object.defineProperty(obj, 'name', {
-  value: 'Alice',
-  writable: false,     // cannot change
-  enumerable: true,    // appears in for...in
-  configurable: true   // can delete
-});
-
-obj.name; // 'Alice'
-obj.name = 'Bob'; // fails silently (or TypeError in strict)
-obj.name; // 'Alice'</pre><br><strong>Getter/Setter:</strong><br><pre>Object.defineProperty(obj, 'age', {
-  get() { return this._age; },
-  set(val) { this._age = val; },
-  enumerable: true,
-  configurable: true
-});</pre><br><strong>Defaults (if not specified):</strong> all are <code>false</code>!"},
+     a:"<strong>Object.defineProperty()</strong> creates or modifies a property with precise control via property descriptors.<br><pre>const obj = {};\n\nObject.defineProperty(obj, 'name', {\n  value: 'Alice',\n  writable: false,     // cannot change\n  enumerable: true,    // appears in for...in\n  configurable: true   // can delete\n});\n\nobj.name; // 'Alice'\nobj.name = 'Bob'; // fails silently (or TypeError in strict)\nobj.name; // 'Alice'</pre><br><strong>Getter/Setter:</strong><br><pre>Object.defineProperty(obj, 'age', {\n  get() { return this._age; },\n  set(val) { this._age = val; },\n  enumerable: true,\n  configurable: true\n});</pre><br><strong>Defaults (if not specified):</strong> all are <code>false</code>!"},
     {q:"What are property descriptors?",d:"hard",
-     a:"<strong>Property descriptors</strong> define how a property behaves.<br><br><strong>Data descriptors:</strong><ul><li><code>value</code> — the value</li><li><code>writable</code> — can be changed (default: false)</li></ul><br><strong>Accessor descriptors:</strong><ul><li><code>get</code> — getter function</li><li><code>set</code> — setter function</li></ul><br><strong>Both:</strong><ul><li><code>enumerable</code> — appears in for...in, Object.keys() (default: false)</li><li><code>configurable</code> — can delete or reconfigure (default: false)</li></ul><br><pre>Object.getOwnPropertyDescriptor(obj, 'x');
-// {value: 1, writable: false, enumerable: false, configurable: false}</pre>"},
+     a:"<strong>Property descriptors</strong> define how a property behaves.<br><br><strong>Data descriptors:</strong><ul><li><code>value</code> — the value</li><li><code>writable</code> — can be changed (default: false)</li></ul><br><strong>Accessor descriptors:</strong><ul><li><code>get</code> — getter function</li><li><code>set</code> — setter function</li></ul><br><strong>Both:</strong><ul><li><code>enumerable</code> — appears in for...in, Object.keys() (default: false)</li><li><code>configurable</code> — can delete or reconfigure (default: false)</li></ul><br><pre>Object.getOwnPropertyDescriptor(obj, 'x');\n// {value: 1, writable: false, enumerable: false, configurable: false}</pre>"},
     {q:"What is Object.freeze() vs Object.seal()?",d:"medium",
-     a:"<strong>Object.freeze():</strong> prevent all changes (no add, delete, modify).<br><strong>Object.seal():</strong> prevent add/delete, but can modify existing.<br><pre>const frozen = Object.freeze({ x: 1 });
-frozen.x = 2; // fails
-frozen.y = 3; // fails
-delete frozen.x; // fails
-
-const sealed = Object.seal({ x: 1 });
-sealed.x = 2; // OK
-sealed.y = 3; // fails
-delete sealed.x; // fails</pre><br><strong>Shallow only:</strong><br><pre>const obj = Object.freeze({ a: { b: 1 } });
-obj.a.b = 2; // OK — inner object not frozen!
-
-// Deep freeze
-function deepFreeze(o) {
-  Object.freeze(o);
-  Object.values(o).forEach(v => {
-    if (typeof v === 'object') deepFreeze(v);
-  });
-}</pre>"},
+     a:"<strong>Object.freeze():</strong> prevent all changes (no add, delete, modify).<br><strong>Object.seal():</strong> prevent add/delete, but can modify existing.<br><pre>const frozen = Object.freeze({ x: 1 });\nfrozen.x = 2; // fails\nfrozen.y = 3; // fails\ndelete frozen.x; // fails\n\nconst sealed = Object.seal({ x: 1 });\nsealed.x = 2; // OK\nsealed.y = 3; // fails\ndelete sealed.x; // fails</pre><br><strong>Shallow only:</strong><br><pre>const obj = Object.freeze({ a: { b: 1 } });\nobj.a.b = 2; // OK — inner object not frozen!\n\n// Deep freeze\nfunction deepFreeze(o) {\n  Object.freeze(o);\n  Object.values(o).forEach(v => {\n    if (typeof v === 'object') deepFreeze(v);\n  });\n}</pre>"},
     {q:"What is Object.keys() vs Object.getOwnPropertyNames() vs for...in?",d:"medium",
-     a:"<strong>Object.keys():</strong> enumerable own properties.<br><strong>Object.getOwnPropertyNames():</strong> all own properties (enumerable + non-enumerable).<br><strong>for...in:</strong> enumerable own + inherited properties.<br><pre>function User(name) { this.name = name; }
-User.prototype.greet = function() {};
-
-const u = new User('Alice');
-
-Object.defineProperty(u, 'id', {
-  value: 123,
-  enumerable: false // not enumerable
-});
-
-Object.keys(u); // ['name']
-Object.getOwnPropertyNames(u); // ['name', 'id']
-for (let key in u) console.log(key); // 'name', 'greet' (inherited!)</pre>"},
+     a:"<strong>Object.keys():</strong> enumerable own properties.<br><strong>Object.getOwnPropertyNames():</strong> all own properties (enumerable + non-enumerable).<br><strong>for...in:</strong> enumerable own + inherited properties.<br><pre>function User(name) { this.name = name; }\nUser.prototype.greet = function() {};\n\nconst u = new User('Alice');\n\nObject.defineProperty(u, 'id', {\n  value: 123,\n  enumerable: false // not enumerable\n});\n\nObject.keys(u); // ['name']\nObject.getOwnPropertyNames(u); // ['name', 'id']\nfor (let key in u) console.log(key); // 'name', 'greet' (inherited!)</pre>"},
     {q:"What is Array.from() and its use cases?",d:"medium",
-     a:"<strong>Array.from()</strong> converts array-like or iterable to array.<br><pre>// From array-like (arguments, NodeList, string)
-function foo() {
-  const arr = Array.from(arguments); // convert arguments
-  return arr.map(x => x * 2);
-}
-
-// From string
-Array.from('hello'); // ['h','e','l','l','o']
-
-// From Set/Map
-Array.from(new Set([1,1,2,2])); // [1,2]
-
-// With mapping function
-Array.from([1,2,3], x => x * 2); // [2,4,6]
-
-// Fill array of N items
-Array.from({length: 3}, (_, i) => i); // [0,1,2]</pre>"},
+     a:"<strong>Array.from()</strong> converts array-like or iterable to array.<br><pre>// From array-like (arguments, NodeList, string)\nfunction foo() {\n  const arr = Array.from(arguments); // convert arguments\n  return arr.map(x => x * 2);\n}\n\n// From string\nArray.from('hello'); // ['h','e','l','l','o']\n\n// From Set/Map\nArray.from(new Set([1,1,2,2])); // [1,2]\n\n// With mapping function\nArray.from([1,2,3], x => x * 2); // [2,4,6]\n\n// Fill array of N items\nArray.from({length: 3}, (_, i) => i); // [0,1,2]</pre>"},
     {q:"What is Array.isArray() and Array.of()?",d:"easy",
-     a:"<strong>Array.isArray():</strong> check if value is array (safe across iframes).<br><pre>Array.isArray([1,2,3]); // true
-Array.isArray('hello'); // false
-Array.isArray({length: 3}); // false</pre><br><strong>Array.of():</strong> create array from arguments (unlike Array constructor).<br><pre>Array(3);       // [empty × 3]
-Array.of(3);    // [3]
-
-Array(1, 2, 3); // [1,2,3]
-Array.of(1, 2, 3); // [1,2,3]</pre>"},
+     a:"<strong>Array.isArray():</strong> check if value is array (safe across iframes).<br><pre>Array.isArray([1,2,3]); // true\nArray.isArray('hello'); // false\nArray.isArray({length: 3}); // false</pre><br><strong>Array.of():</strong> create array from arguments (unlike Array constructor).<br><pre>Array(3);       // [empty × 3]\nArray.of(3);    // [3]\n\nArray(1, 2, 3); // [1,2,3]\nArray.of(1, 2, 3); // [1,2,3]</pre>"},
     {q:"What are some() and every() short-circuit behavior?",d:"medium",
-     a:"<strong>some():</strong> returns true if <strong>any</strong> element passes test. Stops on first true.<br><strong>every():</strong> returns true if <strong>all</strong> elements pass test. Stops on first false.<br><pre>[1,2,3,4,5].some(x => {
-  console.log(x); // 1, 2, 3 — stops when x > 2 (true)
-  return x > 2;
-}); // true
-
-[1,2,3,4,5].every(x => {
-  console.log(x); // 1 — stops when x > 0 (false)
-  return x > 0;
-}); // false</pre><br><strong>Practical:</strong><br><pre>const hasNegative = nums.some(n => n < 0);
-const allValid = users.every(u => u.age >= 18);</pre>"},
+     a:"<strong>some():</strong> returns true if <strong>any</strong> element passes test. Stops on first true.<br><strong>every():</strong> returns true if <strong>all</strong> elements pass test. Stops on first false.<br><pre>[1,2,3,4,5].some(x => {\n  console.log(x); // 1, 2, 3 — stops when x > 2 (true)\n  return x > 2;\n}); // true\n\n[1,2,3,4,5].every(x => {\n  console.log(x); // 1 — stops when x > 0 (false)\n  return x > 0;\n}); // false</pre><br><strong>Practical:</strong><br><pre>const hasNegative = nums.some(n => n < 0);\nconst allValid = users.every(u => u.age >= 18);</pre>"},
 
     // ── BATCH 8: Advanced Async & Promises ──────────────────────────────────
     {q:"What is Symbol type?",d:"hard",
-     a:"<strong>Symbol</strong> is a unique, immutable primitive type for object keys.<br><pre>const sym1 = Symbol('id');
-const sym2 = Symbol('id');
-
-sym1 === sym2; // false — each is unique
-
-const obj = {};
-obj[sym1] = 'value1';
-obj[sym2] = 'value2';
-
-Object.keys(obj); // [] — symbols not enumerated
-Object.getOwnPropertySymbols(obj); // [Symbol(id), Symbol(id)]</pre><br><strong>Global symbols:</strong><br><pre>const sym = Symbol.for('app.id'); // global registry
-Symbol.for('app.id') === sym; // true
-Symbol.keyFor(sym); // 'app.id'</pre><br><strong>Well-known symbols:</strong> <code>Symbol.iterator</code>, <code>Symbol.hasInstance</code>, <code>Symbol.toPrimitive</code>."},
+     a:"<strong>Symbol</strong> is a unique, immutable primitive type for object keys.<br><pre>const sym1 = Symbol('id');\nconst sym2 = Symbol('id');\n\nsym1 === sym2; // false — each is unique\n\nconst obj = {};\nobj[sym1] = 'value1';\nobj[sym2] = 'value2';\n\nObject.keys(obj); // [] — symbols not enumerated\nObject.getOwnPropertySymbols(obj); // [Symbol(id), Symbol(id)]</pre><br><strong>Global symbols:</strong><br><pre>const sym = Symbol.for('app.id'); // global registry\nSymbol.for('app.id') === sym; // true\nSymbol.keyFor(sym); // 'app.id'</pre><br><strong>Well-known symbols:</strong> <code>Symbol.iterator</code>, <code>Symbol.hasInstance</code>, <code>Symbol.toPrimitive</code>."},
     {q:"What is Promise.allSettled() vs Promise.all()?",d:"hard",
-     a:"<strong>Promise.all():</strong> rejects if any promise rejects. Returns all resolved values or first error.<br><strong>Promise.allSettled():</strong> waits for all promises (resolved or rejected). Returns array of {status, value/reason}.<br><pre>// all() — fast reject
-Promise.all([
-  Promise.resolve(1),
-  Promise.reject('error'),
-  Promise.resolve(3)
-]); // rejects with 'error' immediately
-
-// allSettled() — get all results
-Promise.allSettled([
-  Promise.resolve(1),
-  Promise.reject('error'),
-  Promise.resolve(3)
-]).then(results => {
-  // [{status: 'fulfilled', value: 1},
-  //  {status: 'rejected', reason: 'error'},
-  //  {status: 'fulfilled', value: 3}]
-});</pre><br><strong>Use case:</strong> allSettled for batch operations where some may fail."},
+     a:"<strong>Promise.all():</strong> rejects if any promise rejects. Returns all resolved values or first error.<br><strong>Promise.allSettled():</strong> waits for all promises (resolved or rejected). Returns array of {status, value/reason}.<br><pre>// all() — fast reject\nPromise.all([\n  Promise.resolve(1),\n  Promise.reject('error'),\n  Promise.resolve(3)\n]); // rejects with 'error' immediately\n\n// allSettled() — get all results\nPromise.allSettled([\n  Promise.resolve(1),\n  Promise.reject('error'),\n  Promise.resolve(3)\n]).then(results => {\n  // [{status: 'fulfilled', value: 1},\n  //  {status: 'rejected', reason: 'error'},\n  //  {status: 'fulfilled', value: 3}]\n});</pre><br><strong>Use case:</strong> allSettled for batch operations where some may fail."},
     {q:"What is Promise.any()?",d:"hard",
-     a:"<strong>Promise.any():</strong> returns first <strong>fulfilled</strong> promise. Rejects if all reject (AggregateError).<br><pre>Promise.any([
-  Promise.reject('a'),
-  Promise.reject('b'),
-  Promise.resolve('success')
-]).then(val => console.log(val)); // 'success'
-
-// All reject → AggregateError
-Promise.any([
-  Promise.reject('a'),
-  Promise.reject('b')
-]).catch(err => {
-  console.log(err instanceof AggregateError); // true
-  console.log(err.errors); // ['a', 'b']
-});</pre><br><strong>Comparison:</strong><ul><li><code>Promise.race()</code> — first (resolved or rejected)</li><li><code>Promise.any()</code> — first fulfilled</li><li><code>Promise.all()</code> — all fulfilled</li></ul>"},
+     a:"<strong>Promise.any():</strong> returns first <strong>fulfilled</strong> promise. Rejects if all reject (AggregateError).<br><pre>Promise.any([\n  Promise.reject('a'),\n  Promise.reject('b'),\n  Promise.resolve('success')\n]).then(val => console.log(val)); // 'success'\n\n// All reject → AggregateError\nPromise.any([\n  Promise.reject('a'),\n  Promise.reject('b')\n]).catch(err => {\n  console.log(err instanceof AggregateError); // true\n  console.log(err.errors); // ['a', 'b']\n});</pre><br><strong>Comparison:</strong><ul><li><code>Promise.race()</code> — first (resolved or rejected)</li><li><code>Promise.any()</code> — first fulfilled</li><li><code>Promise.all()</code> — all fulfilled</li></ul>"},
     {q:"What is AbortController?",d:"hard",
-     a:"<strong>AbortController</strong> allows cancellation of fetch requests and other async operations.<br><pre>const controller = new AbortController();
-
-const timeout = setTimeout(() => controller.abort(), 5000);
-
-fetch('/api/data', { signal: controller.signal })
-  .then(r => r.json())
-  .then(data => console.log(data))
-  .catch(err => {
-    if (err.name === 'AbortError') console.log('Cancelled');
-  })
-  .finally(() => clearTimeout(timeout));</pre><br><strong>Usage:</strong> abort request, cancel promises, timeout patterns."},
+     a:"<strong>AbortController</strong> allows cancellation of fetch requests and other async operations.<br><pre>const controller = new AbortController();\n\nconst timeout = setTimeout(() => controller.abort(), 5000);\n\nfetch('/api/data', { signal: controller.signal })\n  .then(r => r.json())\n  .then(data => console.log(data))\n  .catch(err => {\n    if (err.name === 'AbortError') console.log('Cancelled');\n  })\n  .finally(() => clearTimeout(timeout));</pre><br><strong>Usage:</strong> abort request, cancel promises, timeout patterns."},
     {q:"What are async generators?",d:"hard",
-     a:"<strong>Async generator</strong> combines async/await with generators for async iteration.<br><pre>async function* asyncGen() {
-  yield await Promise.resolve(1);
-  yield await Promise.resolve(2);
-  yield await Promise.resolve(3);
-}
-
-// Use with for await...of
-for await (const val of asyncGen()) {
-  console.log(val); // 1, 2, 3
-}</pre><br><strong>Practical example — paginated API:</strong><br><pre>async function* fetchPages(url) {
-  let page = 1;
-  while (true) {
-    const res = await fetch(url + '?page=' + page);
-    const data = await res.json();
-    if (!data.length) break;
-    yield* data;
-    page++;
-  }
-}</pre>"},
+     a:"<strong>Async generator</strong> combines async/await with generators for async iteration.<br><pre>async function* asyncGen() {\n  yield await Promise.resolve(1);\n  yield await Promise.resolve(2);\n  yield await Promise.resolve(3);\n}\n\n// Use with for await...of\nfor await (const val of asyncGen()) {\n  console.log(val); // 1, 2, 3\n}</pre><br><strong>Practical example — paginated API:</strong><br><pre>async function* fetchPages(url) {\n  let page = 1;\n  while (true) {\n    const res = await fetch(url + '?page=' + page);\n    const data = await res.json();\n    if (!data.length) break;\n    yield* data;\n    page++;\n  }\n}</pre>"},
 
     // ── BATCH 9: DOM Events & APIs ──────────────────────────────────────────
     {q:"What is an event listener and addEventListener()?",d:"easy",
-     a:"<strong>Event listeners</strong> execute code when an event occurs.<br><pre>element.addEventListener('click', function(event) {
-  console.log('Clicked!');
-});
-
-// Named function (can remove later)
-function handler(e) { console.log(e.type); }
-element.addEventListener('click', handler);
-element.removeEventListener('click', handler);</pre><br><strong>Options:</strong><br><pre>element.addEventListener('click', handler, {
-  capture: true,   // capture phase
-  once: true,      // remove after first
-  passive: true    // won't call preventDefault (perf)
-});</pre><br><strong>Inline (old style):</strong><br><pre>&lt;button onclick="alert('clicked')"&gt;Click&lt;/button&gt;</pre><br><strong>Better to use addEventListener — more flexible.</strong>"},
+     a:"<strong>Event listeners</strong> execute code when an event occurs.<br><pre>element.addEventListener('click', function(event) {\n  console.log('Clicked!');\n});\n\n// Named function (can remove later)\nfunction handler(e) { console.log(e.type); }\nelement.addEventListener('click', handler);\nelement.removeEventListener('click', handler);</pre><br><strong>Options:</strong><br><pre>element.addEventListener('click', handler, {\n  capture: true,   // capture phase\n  once: true,      // remove after first\n  passive: true    // won't call preventDefault (perf)\n});</pre><br><strong>Inline (old style):</strong><br><pre>&lt;button onclick=\"alert('clicked')\"&gt;Click&lt;/button&gt;</pre><br><strong>Better to use addEventListener — more flexible.</strong>"},
     {q:"What is event bubbling vs capturing?",d:"medium",
-     a:"<strong>Event capturing (phase 1):</strong> event travels from window → target.<br><strong>Event bubbling (phase 3):</strong> event travels from target → window.<br><br><strong>HTML:</strong> &lt;div id='outer'&gt;&lt;p id='inner'&gt;Click&lt;/p&gt;&lt;/div&gt;<br><pre>// Capturing phase (goes down)
-outer.addEventListener('click', handler, true);
-
-// Bubbling phase (goes up)
-outer.addEventListener('click', handler, false); // default
-outer.addEventListener('click', handler); // default = false</pre><br><strong>Order:</strong> 1) Capturing down, 2) Target, 3) Bubbling up.<br><br><strong>Practical:</strong> use bubbling for event delegation, use capturing for early interception."},
+     a:"<strong>Event capturing (phase 1):</strong> event travels from window → target.<br><strong>Event bubbling (phase 3):</strong> event travels from target → window.<br><br><strong>HTML:</strong> &lt;div id='outer'&gt;&lt;p id='inner'&gt;Click&lt;/p&gt;&lt;/div&gt;<br><pre>// Capturing phase (goes down)\nouter.addEventListener('click', handler, true);\n\n// Bubbling phase (goes up)\nouter.addEventListener('click', handler, false); // default\nouter.addEventListener('click', handler); // default = false</pre><br><strong>Order:</strong> 1) Capturing down, 2) Target, 3) Bubbling up.<br><br><strong>Practical:</strong> use bubbling for event delegation, use capturing for early interception."},
     {q:"What is stopPropagation() vs stopImmediatePropagation()?",d:"hard",
-     a:"<strong>stopPropagation():</strong> stop bubbling to parent, but other listeners on same element still fire.<br><strong>stopImmediatePropagation():</strong> stop all propagation and other listeners on same element.<br><pre>element.addEventListener('click', (e) => {
-  console.log('1');
-  e.stopPropagation(); // stop bubbling
-});
-
-element.addEventListener('click', (e) => {
-  console.log('2'); // still fires!
-});
-
-element.parentElement.addEventListener('click', () => {
-  console.log('3'); // does NOT fire
-});
-
-// Output: 1, 2
-
-// With stopImmediatePropagation:
-element.addEventListener('click', (e) => {
-  console.log('1');
-  e.stopImmediatePropagation();
-});
-
-element.addEventListener('click', () => {
-  console.log('2'); // does NOT fire!
-});
-
-// Output: 1</pre>"},
+     a:"<strong>stopPropagation():</strong> stop bubbling to parent, but other listeners on same element still fire.<br><strong>stopImmediatePropagation():</strong> stop all propagation and other listeners on same element.<br><pre>element.addEventListener('click', (e) => {\n  console.log('1');\n  e.stopPropagation(); // stop bubbling\n});\n\nelement.addEventListener('click', (e) => {\n  console.log('2'); // still fires!\n});\n\nelement.parentElement.addEventListener('click', () => {\n  console.log('3'); // does NOT fire\n});\n\n// Output: 1, 2\n\n// With stopImmediatePropagation:\nelement.addEventListener('click', (e) => {\n  console.log('1');\n  e.stopImmediatePropagation();\n});\n\nelement.addEventListener('click', () => {\n  console.log('2'); // does NOT fire!\n});\n\n// Output: 1</pre>"},
     {q:"What is CustomEvent?",d:"hard",
-     a:"<strong>CustomEvent</strong> creates custom events with arbitrary data.<br><pre>// Create
-const evt = new CustomEvent('myEvent', {
-  detail: { message: 'Hello', id: 42 }
-});
-
-// Dispatch
-element.dispatchEvent(evt);
-
-// Listen
-element.addEventListener('myEvent', (e) => {
-  console.log(e.detail.message); // 'Hello'
-  console.log(e.detail.id);      // 42
-});</pre><br><strong>Practical example:</strong><br><pre>class DataLoader {
-  async load(url) {
-    const data = await fetch(url).then(r => r.json());
-    this.dispatchEvent(new CustomEvent('loaded', { detail: data }));
-  }
-}
-
-const loader = new EventTarget();
-loader.load = DataLoader.prototype.load;
-loader.addEventListener('loaded', (e) => {
-  console.log('Data:', e.detail);
-});</pre>"},
+     a:"<strong>CustomEvent</strong> creates custom events with arbitrary data.<br><pre>// Create\nconst evt = new CustomEvent('myEvent', {\n  detail: { message: 'Hello', id: 42 }\n});\n\n// Dispatch\nelement.dispatchEvent(evt);\n\n// Listen\nelement.addEventListener('myEvent', (e) => {\n  console.log(e.detail.message); // 'Hello'\n  console.log(e.detail.id);      // 42\n});</pre><br><strong>Practical example:</strong><br><pre>class DataLoader {\n  async load(url) {\n    const data = await fetch(url).then(r => r.json());\n    this.dispatchEvent(new CustomEvent('loaded', { detail: data }));\n  }\n}\n\nconst loader = new EventTarget();\nloader.load = DataLoader.prototype.load;\nloader.addEventListener('loaded', (e) => {\n  console.log('Data:', e.detail);\n});</pre>"},
 
     // ── BATCH 10: Storage & Serialization ───────────────────────────────────
     {q:"What is localStorage vs sessionStorage vs cookies?",d:"hard",
-     a:"<strong>localStorage:</strong> persistent (until cleared), same domain only.<br><strong>sessionStorage:</strong> session-only (cleared on tab close), same domain only.<br><strong>cookies:</strong> persistent (with expiry), sent with every request.<br><br><table style='width:100%;border-collapse:collapse'><tr><th style='text-align:left'>Feature</th><th>localStorage</th><th>sessionStorage</th><th>cookies</th></tr><tr><td>Lifespan</td><td>Persistent</td><td>Session</td><td>Configurable</td></tr><tr><td>Domain</td><td>Same origin</td><td>Same origin</td><td>Can share</td></tr><tr><td>Sent in requests</td><td>No</td><td>No</td><td>Yes</td></tr><tr><td>Size limit</td><td>5-10MB</td><td>5-10MB</td><td>4KB</td></tr></table><br><pre>// localStorage
-localStorage.setItem('key', 'value');
-localStorage.getItem('key'); // 'value'
-localStorage.removeItem('key');
-localStorage.clear();
-
-// sessionStorage
-sessionStorage.setItem('key', 'value');
-
-// cookies
-document.cookie = 'key=value; max-age=3600; secure; samesite=strict';</pre>"},
+     a:"<strong>localStorage:</strong> persistent (until cleared), same domain only.<br><strong>sessionStorage:</strong> session-only (cleared on tab close), same domain only.<br><strong>cookies:</strong> persistent (with expiry), sent with every request.<br><br><table style='width:100%;border-collapse:collapse'><tr><th style='text-align:left'>Feature</th><th>localStorage</th><th>sessionStorage</th><th>cookies</th></tr><tr><td>Lifespan</td><td>Persistent</td><td>Session</td><td>Configurable</td></tr><tr><td>Domain</td><td>Same origin</td><td>Same origin</td><td>Can share</td></tr><tr><td>Sent in requests</td><td>No</td><td>No</td><td>Yes</td></tr><tr><td>Size limit</td><td>5-10MB</td><td>5-10MB</td><td>4KB</td></tr></table><br><pre>// localStorage\nlocalStorage.setItem('key', 'value');\nlocalStorage.getItem('key'); // 'value'\nlocalStorage.removeItem('key');\nlocalStorage.clear();\n\n// sessionStorage\nsessionStorage.setItem('key', 'value');\n\n// cookies\ndocument.cookie = 'key=value; max-age=3600; secure; samesite=strict';</pre>"},
     {q:"What are cookie attributes?",d:"hard",
-     a:"<strong>Cookie attributes control behavior and security:</strong><br><pre>document.cookie = 'key=value; attributes';</pre><br><ul><li><code>Max-Age=seconds</code> — lifetime in seconds</li><li><code>Expires=date</code> — expiry date</li><li><code>Path=/</code> — path restriction</li><li><code>Domain=.example.com</code> — domain scope</li><li><code>Secure</code> — HTTPS only</li><li><code>HttpOnly</code> — cannot access via JS (server sets)</li><li><code>SameSite=Strict|Lax|None</code> — CSRF protection</li></ul><br><pre>// Secure, HttpOnly (must be server-set)
-Set-Cookie: sessionId=abc123; HttpOnly; Secure; SameSite=Strict
-
-// Via JavaScript (HttpOnly inaccessible)
-document.cookie = 'token=xyz; Max-Age=3600; Secure; Path=/';</pre>"},
+     a:"<strong>Cookie attributes control behavior and security:</strong><br><pre>document.cookie = 'key=value; attributes';</pre><br><ul><li><code>Max-Age=seconds</code> — lifetime in seconds</li><li><code>Expires=date</code> — expiry date</li><li><code>Path=/</code> — path restriction</li><li><code>Domain=.example.com</code> — domain scope</li><li><code>Secure</code> — HTTPS only</li><li><code>HttpOnly</code> — cannot access via JS (server sets)</li><li><code>SameSite=Strict|Lax|None</code> — CSRF protection</li></ul><br><pre>// Secure, HttpOnly (must be server-set)\nSet-Cookie: sessionId=abc123; HttpOnly; Secure; SameSite=Strict\n\n// Via JavaScript (HttpOnly inaccessible)\ndocument.cookie = 'token=xyz; Max-Age=3600; Secure; Path=/';</pre>"},
     {q:"What is IndexedDB vs localStorage?",d:"hard",
-     a:"<strong>localStorage:</strong> simple key-value, synchronous, 5-10MB, blocks UI.<br><strong>IndexedDB:</strong> large structured data, asynchronous, 50MB+, indexed queries.<br><pre>// localStorage — simple
-localStorage.setItem('user', JSON.stringify({name: 'Alice'}));
-
-// IndexedDB — complex
-const request = indexedDB.open('mydb', 1);
-request.onsuccess = (e) => {
-  const db = e.target.result;
-  const transaction = db.transaction('users', 'readwrite');
-  const store = transaction.objectStore('users');
-  store.add({id: 1, name: 'Alice'});
-  store.index('byName').getAll('Alice');
-};</pre><br><strong>Use IndexedDB for:</strong> large datasets, offline apps, complex queries."},
+     a:"<strong>localStorage:</strong> simple key-value, synchronous, 5-10MB, blocks UI.<br><strong>IndexedDB:</strong> large structured data, asynchronous, 50MB+, indexed queries.<br><pre>// localStorage — simple\nlocalStorage.setItem('user', JSON.stringify({name: 'Alice'}));\n\n// IndexedDB — complex\nconst request = indexedDB.open('mydb', 1);\nrequest.onsuccess = (e) => {\n  const db = e.target.result;\n  const transaction = db.transaction('users', 'readwrite');\n  const store = transaction.objectStore('users');\n  store.add({id: 1, name: 'Alice'});\n  store.index('byName').getAll('Alice');\n};</pre><br><strong>Use IndexedDB for:</strong> large datasets, offline apps, complex queries."},
     {q:"What is the Service Worker lifecycle?",d:"hard",
-     a:"<strong>Service Worker lifecycle:</strong> register → install → activate → fetch<br><pre>// Register
-navigator.serviceWorker.register('/sw.js');
-
-// sw.js
-self.addEventListener('install', (e) => {
-  e.waitUntil(
-    caches.open('v1').then(cache => {
-      return cache.addAll(['/index.html', '/style.css']);
-    })
-  );
-});
-
-self.addEventListener('activate', (e) => {
-  e.waitUntil(
-    caches.keys().then(names => {
-      return Promise.all(
-        names.map(name => caches.delete(name))
-      );
-    })
-  );
-});
-
-self.addEventListener('fetch', (e) => {
-  e.respondWith(
-    caches.match(e.request)
-      .then(resp => resp || fetch(e.request))
-  );
-});</pre>"},
+     a:"<strong>Service Worker lifecycle:</strong> register → install → activate → fetch<br><pre>// Register\nnavigator.serviceWorker.register('/sw.js');\n\n// sw.js\nself.addEventListener('install', (e) => {\n  e.waitUntil(\n    caches.open('v1').then(cache => {\n      return cache.addAll(['/index.html', '/style.css']);\n    })\n  );\n});\n\nself.addEventListener('activate', (e) => {\n  e.waitUntil(\n    caches.keys().then(names => {\n      return Promise.all(\n        names.map(name => caches.delete(name))\n      );\n    })\n  );\n});\n\nself.addEventListener('fetch', (e) => {\n  e.respondWith(\n    caches.match(e.request)\n      .then(resp => resp || fetch(e.request))\n  );\n});</pre>"},
     {q:"What is JSON.stringify() with replacer and reviver?",d:"hard",
-     a:"<strong>replacer:</strong> function to transform values during stringify.<br><strong>reviver:</strong> function to transform values during parse.<br><pre>// Replacer (stringify)
-const obj = {name: 'Alice', age: 30, secret: 'hidden'};
-const json = JSON.stringify(obj, (key, val) => {
-  if (key === 'secret') return undefined; // exclude
-  if (typeof val === 'number') return val * 2; // transform
-  return val;
-});
-
-// Reviver (parse)
-const str = '{"date":"2024-01-01T00:00:00Z","count":42}';
-const data = JSON.parse(str, (key, val) => {
-  if (key === 'date') return new Date(val); // convert to Date
-  return val;
-});
-data.date; // Date object
-data.count; // 42</pre><br><strong>Use case:</strong> custom serialization, filtering secrets, type conversion."}
+     a:"<strong>replacer:</strong> function to transform values during stringify.<br><strong>reviver:</strong> function to transform values during parse.<br><pre>// Replacer (stringify)\nconst obj = {name: 'Alice', age: 30, secret: 'hidden'};\nconst json = JSON.stringify(obj, (key, val) => {\n  if (key === 'secret') return undefined; // exclude\n  if (typeof val === 'number') return val * 2; // transform\n  return val;\n});\n\n// Reviver (parse)\nconst str = '{\"date\":\"2024-01-01T00:00:00Z\",\"count\":42}';\nconst data = JSON.parse(str, (key, val) => {\n  if (key === 'date') return new Date(val); // convert to Date\n  return val;\n});\ndata.date; // Date object\ndata.count; // 42</pre><br><strong>Use case:</strong> custom serialization, filtering secrets, type conversion."},
   
     // ── BATCH 11: RegExp & Built-ins ───────────────────────────────────────
     {q:"What are RegExp flags?",d:"hard",
-     a:"<strong>RegExp flags</strong> modify pattern matching behavior:<br><ul><li><code>g</code> — global (all matches, not just first)</li><li><code>i</code> — case-insensitive</li><li><code>m</code> — multiline (^ $ match line boundaries)</li><li><code>s</code> — dotall (. matches newline)</li><li><code>y</code> — sticky (match from lastIndex)</li><li><code>d</code> — hasIndices (capture indices)</li><li><code>u</code> — unicode (proper UTF-16)</li></ul><br><pre>const text = 'Hello\nWorld';
-
-/^W/.test(text);       // false
-/^W/m.test(text);      // true — multiline
-
-/hello/i.test(text);   // true — case-insensitive
-
-text.match(/l/g);      // ['l','l','l'] — global
-text.match(/l/);       // ['l'] — first only</pre>"},
+     a:"<strong>RegExp flags</strong> modify pattern matching behavior:<br><ul><li><code>g</code> — global (all matches, not just first)</li><li><code>i</code> — case-insensitive</li><li><code>m</code> — multiline (^ $ match line boundaries)</li><li><code>s</code> — dotall (. matches newline)</li><li><code>y</code> — sticky (match from lastIndex)</li><li><code>d</code> — hasIndices (capture indices)</li><li><code>u</code> — unicode (proper UTF-16)</li></ul><br><pre>const text = 'Hello\nWorld';\n\n/^W/.test(text);       // false\n/^W/m.test(text);      // true — multiline\n\n/hello/i.test(text);   // true — case-insensitive\n\ntext.match(/l/g);      // ['l','l','l'] — global\ntext.match(/l/);       // ['l'] — first only</pre>"},
     {q:"What is the difference between exec(), test(), and match()?",d:"hard",
-     a:"<strong>exec():</strong> returns match array with groups and index.<br><strong>test():</strong> returns boolean (true/false).<br><strong>match():</strong> string method, returns all matches or null.<br><pre>const pattern = /l(\w)/g;
-const text = 'hello';
-
-// exec() — returns array with captured groups
-pattern.exec(text); // ['ll', 'l']
-pattern.lastIndex = 0; // reset
-
-// test() — returns boolean
-/l/.test(text); // true
-/x/.test(text); // false
-
-// match() — string method
-text.match(/l/g); // ['l','l']
-text.match(/l/);  // ['l']
-text.match(/x/);  // null</pre>"},
+     a:"<strong>exec():</strong> returns match array with groups and index.<br><strong>test():</strong> returns boolean (true/false).<br><strong>match():</strong> string method, returns all matches or null.<br><pre>const pattern = /l(\w)/g;\nconst text = 'hello';\n\n// exec() — returns array with captured groups\npattern.exec(text); // ['ll', 'l']\npattern.lastIndex = 0; // reset\n\n// test() — returns boolean\n/l/.test(text); // true\n/x/.test(text); // false\n\n// match() — string method\ntext.match(/l/g); // ['l','l']\ntext.match(/l/);  // ['l']\ntext.match(/x/);  // null</pre>"},
     {q:"What are lookahead and lookbehind assertions?",d:"hard",
-     a:"<strong>Lookahead (?=):</strong> positive, must be followed by pattern.<br><strong>Negative lookahead (?!):</strong> must NOT be followed.<br><strong>Lookbehind (?<=):</strong> must be preceded by pattern (ES2018).<br><strong>Negative lookbehind (?<!):</strong> must NOT be preceded.<br><pre>// Lookahead
-/\d+(?=px)/.test('16px');      // true — number followed by 'px'
-/\d+(?!px)/.test('16pt');      // true — number NOT followed by 'px'
-
-// Lookbehind (ES2018)
-/(?<=\$)\d+/.test('$100');     // true — number preceded by '$'
-/(?<!\d)@/.test('user@host');  // true — '@' NOT preceded by digit</pre>"},
+     a:"<strong>Lookahead (?=):</strong> positive, must be followed by pattern.<br><strong>Negative lookahead (?!):</strong> must NOT be followed.<br><strong>Lookbehind (?<=):</strong> must be preceded by pattern (ES2018).<br><strong>Negative lookbehind (?<!):</strong> must NOT be preceded.<br><pre>// Lookahead\n/\d+(?=px)/.test('16px');      // true — number followed by 'px'\n/\d+(?!px)/.test('16pt');      // true — number NOT followed by 'px'\n\n// Lookbehind (ES2018)\n/(?<=\$)\d+/.test('$100');     // true — number preceded by '$'\n/(?<!\d)@/.test('user@host');  // true — '@' NOT preceded by digit</pre>"},
     {q:"What are named capture groups?",d:"hard",
-     a:"<strong>Named capture groups</strong> name captured parts for clarity.<br><pre>// Unnamed
-const pattern1 = /(\d{4})-(\d{2})-(\d{2})/;
-const match = '2024-01-15'.match(pattern1);
-match[1]; // '2024'
-match[2]; // '01'
-
-// Named (more readable)
-const pattern2 = /(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})/;
-const result = '2024-01-15'.match(pattern2);
-result.groups.year;  // '2024'
-result.groups.month; // '01'
-result.groups.day;   // '15'</pre>"},
+     a:"<strong>Named capture groups</strong> name captured parts for clarity.<br><pre>// Unnamed\nconst pattern1 = /(\d{4})-(\d{2})-(\d{2})/;\nconst match = '2024-01-15'.match(pattern1);\nmatch[1]; // '2024'\nmatch[2]; // '01'\n\n// Named (more readable)\nconst pattern2 = /(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})/;\nconst result = '2024-01-15'.match(pattern2);\nresult.groups.year;  // '2024'\nresult.groups.month; // '01'\nresult.groups.day;   // '15'</pre>"},
     {q:"What is BigInt and its limitations?",d:"hard",
-     a:"<strong>BigInt</strong> is a primitive for arbitrarily large integers (suffix <code>n</code>).<br><pre>// Large numbers lose precision
-Number.MAX_SAFE_INTEGER; // 9007199254740991
-const big = 9007199254740992n;
-
-big + 1n; // 9007199254740993n
-big.toString(); // '9007199254740992'
-
-// Cannot mix BigInt with Number
-10n + 5;   // TypeError
-10n + 5n;  // 15n
-
-// Math functions don't work
-Math.sqrt(16n); // TypeError
-
-// Comparisons work
-10n > 5;  // true
-10n === 10; // false (different type)</pre><br><strong>Limitations:</strong> no decimals, no Math functions, slower than numbers."},
+     a:"<strong>BigInt</strong> is a primitive for arbitrarily large integers (suffix <code>n</code>).<br><pre>// Large numbers lose precision\nNumber.MAX_SAFE_INTEGER; // 9007199254740991\nconst big = 9007199254740992n;\n\nbig + 1n; // 9007199254740993n\nbig.toString(); // '9007199254740992'\n\n// Cannot mix BigInt with Number\n10n + 5;   // TypeError\n10n + 5n;  // 15n\n\n// Math functions don't work\nMath.sqrt(16n); // TypeError\n\n// Comparisons work\n10n > 5;  // true\n10n === 10; // false (different type)</pre><br><strong>Limitations:</strong> no decimals, no Math functions, slower than numbers."},
     {q:"What are Number methods: isInteger, isSafeInteger, isNaN?",d:"medium",
-     a:"<strong>Number.isInteger():</strong> check if integer (no decimals).<br><strong>Number.isSafeInteger():</strong> check if within safe range.<br><strong>Number.isNaN():</strong> true only for actual NaN (not coerced).<br><pre>Number.isInteger(42);     // true
-Number.isInteger(42.5);   // false
-Number.isInteger(NaN);    // false
-
-Number.isSafeInteger(42); // true
-Number.isSafeInteger(9007199254740992); // false
-
-Number.isNaN(NaN);        // true
-Number.isNaN('NaN');      // false (unlike isNaN!)
-Number.isNaN(undefined);  // false
-
-// Global isNaN coerces!
-isNaN('hello'); // true (coerced to NaN)
-Number.isNaN('hello'); // false (no coercion)</pre>"},
+     a:"<strong>Number.isInteger():</strong> check if integer (no decimals).<br><strong>Number.isSafeInteger():</strong> check if within safe range.<br><strong>Number.isNaN():</strong> true only for actual NaN (not coerced).<br><pre>Number.isInteger(42);     // true\nNumber.isInteger(42.5);   // false\nNumber.isInteger(NaN);    // false\n\nNumber.isSafeInteger(42); // true\nNumber.isSafeInteger(9007199254740992); // false\n\nNumber.isNaN(NaN);        // true\nNumber.isNaN('NaN');      // false (unlike isNaN!)\nNumber.isNaN(undefined);  // false\n\n// Global isNaN coerces!\nisNaN('hello'); // true (coerced to NaN)\nNumber.isNaN('hello'); // false (no coercion)</pre>"},
 
     // ── BATCH 12: Performance & Optimization ────────────────────────────────
     {q:"What is critical rendering path (CRP)?",d:"hard",
-     a:"<strong>Critical Rendering Path</strong> is the sequence of steps browser takes to convert HTML/CSS/JS to pixels:<br><pre>1. Parse HTML → DOM tree
-2. Parse CSS → CSSOM tree
-3. Combine DOM + CSSOM → Render tree
-4. Layout → compute positions/sizes
-5. Paint → rasterize pixels
-6. Composite → combine layers</pre><br><strong>Optimization:</strong><br><ul><li>Minimize critical resources (CSS, JS files)</li><li>Inline critical CSS</li><li>Defer non-critical JS</li><li>Preload fonts</li><li>Compress assets</li></ul><br><pre>// Block rendering
-<script src='critical.js'></script>
-
-// Non-blocking
-<script src='non-critical.js' defer></script>
-
-// Preload font
-<link rel='preload' as='font' href='font.woff2'></pre>"},
+     a:"<strong>Critical Rendering Path</strong> is the sequence of steps browser takes to convert HTML/CSS/JS to pixels:<br><pre>1. Parse HTML → DOM tree\n2. Parse CSS → CSSOM tree\n3. Combine DOM + CSSOM → Render tree\n4. Layout → compute positions/sizes\n5. Paint → rasterize pixels\n6. Composite → combine layers</pre><br><strong>Optimization:</strong><br><ul><li>Minimize critical resources (CSS, JS files)</li><li>Inline critical CSS</li><li>Defer non-critical JS</li><li>Preload fonts</li><li>Compress assets</li></ul><br><pre>// Block rendering\n<script src='critical.js'></script>\n\n// Non-blocking\n<script src='non-critical.js' defer></script>\n\n// Preload font\n<link rel='preload' as='font' href='font.woff2'></pre>"},
     {q:"What is reflow vs repaint?",d:"hard",
-     a:"<strong>Reflow (layout):</strong> browser recalculates element positions/sizes. Expensive!<br><strong>Repaint:</strong> browser redraws pixels. Less expensive than reflow.<br><br><strong>Triggers reflow:</strong> width, height, position, margin, padding, display, font-size, overflow<br><strong>Triggers repaint:</strong> color, background, box-shadow, opacity<br><pre>// Reflow triggers
-elem.style.width = '100px';   // layout change
-elem.offsetWidth;              // force reflow
-elem.style.backgroundColor = 'red'; // repaint only
-getComputedStyle(elem);        // reads cause reflow
-
-// Batch DOM changes (avoid layout thrashing)
-const fragment = document.createDocumentFragment();
-for (let i = 0; i < 1000; i++) {
-  const el = document.createElement('div');
-  fragment.appendChild(el);
-}
-document.body.appendChild(fragment); // single reflow</pre>"},
+     a:"<strong>Reflow (layout):</strong> browser recalculates element positions/sizes. Expensive!<br><strong>Repaint:</strong> browser redraws pixels. Less expensive than reflow.<br><br><strong>Triggers reflow:</strong> width, height, position, margin, padding, display, font-size, overflow<br><strong>Triggers repaint:</strong> color, background, box-shadow, opacity<br><pre>// Reflow triggers\nelem.style.width = '100px';   // layout change\nelem.offsetWidth;              // force reflow\nelem.style.backgroundColor = 'red'; // repaint only\ngetComputedStyle(elem);        // reads cause reflow\n\n// Batch DOM changes (avoid layout thrashing)\nconst fragment = document.createDocumentFragment();\nfor (let i = 0; i < 1000; i++) {\n  const el = document.createElement('div');\n  fragment.appendChild(el);\n}\ndocument.body.appendChild(fragment); // single reflow</pre>"},
     {q:"What is debouncing vs throttling?",d:"hard",
-     a:"<strong>Debouncing:</strong> delay function call until after N ms of inactivity.<br><strong>Throttling:</strong> limit function calls to at most once every N ms.<br><pre>// Debounce (resize, search input)
-function debounce(fn, delay) {
-  let timeout;
-  return function(...args) {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => fn(...args), delay);
-  };
-}
-
-const search = debounce((query) => {
-  console.log('Searching for:', query);
-}, 500);
-
-input.addEventListener('input', (e) => search(e.target.value));
-// Only calls when user stops typing for 500ms
-
-// Throttle (scroll, mouse move)
-function throttle(fn, limit) {
-  let lastRun = 0;
-  return function(...args) {
-    const now = Date.now();
-    if (now - lastRun >= limit) {
-      fn(...args);
-      lastRun = now;
-    }
-  };
-}
-
-const onScroll = throttle(() => {
-  console.log('Scrolling');
-}, 1000);
-
-window.addEventListener('scroll', onScroll);
-// Calls at most once per 1000ms</pre>"},
+     a:"<strong>Debouncing:</strong> delay function call until after N ms of inactivity.<br><strong>Throttling:</strong> limit function calls to at most once every N ms.<br><pre>// Debounce (resize, search input)\nfunction debounce(fn, delay) {\n  let timeout;\n  return function(...args) {\n    clearTimeout(timeout);\n    timeout = setTimeout(() => fn(...args), delay);\n  };\n}\n\nconst search = debounce((query) => {\n  console.log('Searching for:', query);\n}, 500);\n\ninput.addEventListener('input', (e) => search(e.target.value));\n// Only calls when user stops typing for 500ms\n\n// Throttle (scroll, mouse move)\nfunction throttle(fn, limit) {\n  let lastRun = 0;\n  return function(...args) {\n    const now = Date.now();\n    if (now - lastRun >= limit) {\n      fn(...args);\n      lastRun = now;\n    }\n  };\n}\n\nconst onScroll = throttle(() => {\n  console.log('Scrolling');\n}, 1000);\n\nwindow.addEventListener('scroll', onScroll);\n// Calls at most once per 1000ms</pre>"},
     {q:"What is requestAnimationFrame?",d:"medium",
-     a:"<strong>requestAnimationFrame()</strong> schedules callback before next repaint (60fps).<br><pre>let id = requestAnimationFrame(callback);
-cancelAnimationFrame(id);
-
-// Smooth animation
-function animate() {
-  element.style.transform = `translateX(${x}px)`;
-  x += 5;
-  if (x < 500) {
-    requestAnimationFrame(animate);
-  }
-}
-
-requestAnimationFrame(animate);</pre><br><strong>Advantages over setTimeout:</strong><br><ul><li>Synced with browser refresh rate</li><li>Paused when tab is hidden</li><li>Better performance</li></ul>"},
+     a:"<strong>requestAnimationFrame()</strong> schedules callback before next repaint (60fps).<br><pre>let id = requestAnimationFrame(callback);\ncancelAnimationFrame(id);\n\n// Smooth animation\nfunction animate() {\n  element.style.transform = `translateX(${x}px)`;\n  x += 5;\n  if (x < 500) {\n    requestAnimationFrame(animate);\n  }\n}\n\nrequestAnimationFrame(animate);</pre><br><strong>Advantages over setTimeout:</strong><br><ul><li>Synced with browser refresh rate</li><li>Paused when tab is hidden</li><li>Better performance</li></ul>"},
     {q:"What are resource hints?",d:"hard",
-     a:"<strong>Resource hints</strong> help browser optimize loading:<br><ul><li><code>preconnect</code> — pre-establish TCP connection</li><li><code>dns-prefetch</code> — resolve DNS early</li><li><code>preload</code> — load resource with high priority</li><li><code>prefetch</code> — load resource for future use</li><li><code>prerender</code> — prerender entire page</li></ul><br><pre>&lt;!-- DNS lookup only --&gt;
-&lt;link rel='dns-prefetch' href='https://cdn.example.com'&gt;
-
-&lt;!-- TCP handshake + SSL --&gt;
-&lt;link rel='preconnect' href='https://fonts.googleapis.com'&gt;
-
-&lt;!-- Load now with high priority --&gt;
-&lt;link rel='preload' as='script' href='critical.js'&gt;
-&lt;link rel='preload' as='font' href='font.woff2'&gt;
-
-&lt;!-- Load for future use --&gt;
-&lt;link rel='prefetch' href='next-page.js'&gt;</pre>"},
+     a:"<strong>Resource hints</strong> help browser optimize loading:<br><ul><li><code>preconnect</code> — pre-establish TCP connection</li><li><code>dns-prefetch</code> — resolve DNS early</li><li><code>preload</code> — load resource with high priority</li><li><code>prefetch</code> — load resource for future use</li><li><code>prerender</code> — prerender entire page</li></ul><br><pre>&lt;!-- DNS lookup only --&gt;\n&lt;link rel='dns-prefetch' href='https://cdn.example.com'&gt;\n\n&lt;!-- TCP handshake + SSL --&gt;\n&lt;link rel='preconnect' href='https://fonts.googleapis.com'&gt;\n\n&lt;!-- Load now with high priority --&gt;\n&lt;link rel='preload' as='script' href='critical.js'&gt;\n&lt;link rel='preload' as='font' href='font.woff2'&gt;\n\n&lt;!-- Load for future use --&gt;\n&lt;link rel='prefetch' href='next-page.js'&gt;</pre>"},
 
     // ── BATCH 13: Module System & Build ────────────────────────────────────
     {q:"What is CSS-in-JS vs CSS modules vs plain CSS?",d:"medium",
-     a:"<strong>Plain CSS:</strong> global scope, name collisions, easy to learn.<br><strong>CSS Modules:</strong> scoped locally, imports in JS, no global collisions.<br><strong>CSS-in-JS:</strong> styles as objects, dynamic, tied to components.<br><pre>// Plain CSS
-/* style.css */
-.button { color: blue; }
-
-<!-- index.html -->
-<link rel='stylesheet' href='style.css'>
-
-// CSS Modules
-import styles from './styles.module.css';
-<button className={styles.button}>Click</button>
-
-// CSS-in-JS (styled-components)
-const Button = styled.button`
-  color: blue;
-  &:hover { color: darkblue; }
-`;
-<Button>Click</Button></pre>"},
+     a:"<strong>Plain CSS:</strong> global scope, name collisions, easy to learn.<br><strong>CSS Modules:</strong> scoped locally, imports in JS, no global collisions.<br><strong>CSS-in-JS:</strong> styles as objects, dynamic, tied to components.<br><pre>// Plain CSS\n/* style.css */\n.button { color: blue; }\n\n<!-- index.html -->\n<link rel='stylesheet' href='style.css'>\n\n// CSS Modules\nimport styles from './styles.module.css';\n<button className={styles.button}>Click</button>\n\n// CSS-in-JS (styled-components)\nconst Button = styled.button`\n  color: blue;\n  &:hover { color: darkblue; }\n`;\n<Button>Click</Button></pre>"},
     {q:"What is code splitting and dynamic imports?",d:"hard",
-     a:"<strong>Code splitting</strong> divides bundle into chunks, loaded on-demand.<br><strong>Dynamic import()</strong> loads module as Promise.<br><pre>// Static import — bundled upfront
-import Component from './Component';
-
-// Dynamic import — loaded on-demand
-const Component = await import('./Component');
-
-// Use with Webpack
-const Home = lazy(() => import('./pages/Home'));
-const About = lazy(() => import('./pages/About'));
-
-<Suspense fallback={<Loading />}>
-  <Component />
-</Suspense></pre><br><strong>Benefits:</strong> smaller initial bundle, faster first load, lazy routes."},
+     a:"<strong>Code splitting</strong> divides bundle into chunks, loaded on-demand.<br><strong>Dynamic import()</strong> loads module as Promise.<br><pre>// Static import — bundled upfront\nimport Component from './Component';\n\n// Dynamic import — loaded on-demand\nconst Component = await import('./Component');\n\n// Use with Webpack\nconst Home = lazy(() => import('./pages/Home'));\nconst About = lazy(() => import('./pages/About'));\n\n<Suspense fallback={<Loading />}>\n  <Component />\n</Suspense></pre><br><strong>Benefits:</strong> smaller initial bundle, faster first load, lazy routes."},
     {q:"What is webpack Hot Module Replacement (HMR)?",d:"hard",
-     a:"<strong>HMR</strong> allows modules to be updated without full page reload during development.<br><pre>// webpack.config.js
-module.exports = {
-  devServer: {
-    hot: true
-  }
-};
-
-// src/index.js
-if (module.hot) {
-  module.hot.accept('./Component', () => {
-    // reload Component
-  });
-}</pre><br><strong>Process:</strong><br><ol><li>File changes detected</li><li>New module compiled</li><li>Browser notified via WebSocket</li><li>Old module replaced with new</li><li>App state preserved (if handler exists)</li></ol>"},
+     a:"<strong>HMR</strong> allows modules to be updated without full page reload during development.<br><pre>// webpack.config.js\nmodule.exports = {\n  devServer: {\n    hot: true\n  }\n};\n\n// src/index.js\nif (module.hot) {\n  module.hot.accept('./Component', () => {\n    // reload Component\n  });\n}</pre><br><strong>Process:</strong><br><ol><li>File changes detected</li><li>New module compiled</li><li>Browser notified via WebSocket</li><li>Old module replaced with new</li><li>App state preserved (if handler exists)</li></ol>"},
     {q:"What is module caching and singleton pattern?",d:"hard",
-     a:"<strong>Module caching:</strong> modules are loaded once and cached for subsequent imports.<br><pre>// singleton.js
-class Database {
-  constructor() {
-    this.connection = null;
-  }
-  connect() { this.connection = new Connection(); }
-}
-module.exports = new Database();
-
-// app.js
-const db1 = require('./singleton');
-const db2 = require('./singleton');
-db1 === db2; // true — same instance (cached)</pre><br><strong>Module caching guarantees:</strong> each module executed once, exports cached, subsequent imports get cached reference."},
+     a:"<strong>Module caching:</strong> modules are loaded once and cached for subsequent imports.<br><pre>// singleton.js\nclass Database {\n  constructor() {\n    this.connection = null;\n  }\n  connect() { this.connection = new Connection(); }\n}\nmodule.exports = new Database();\n\n// app.js\nconst db1 = require('./singleton');\nconst db2 = require('./singleton');\ndb1 === db2; // true — same instance (cached)</pre><br><strong>Module caching guarantees:</strong> each module executed once, exports cached, subsequent imports get cached reference."},
 
     // ── BATCH 14: Security, Debugging & Advanced ───────────────────────────
     {q:"What is Cross-Site Scripting (XSS) and how to prevent it?",d:"hard",
-     a:"<strong>XSS attack:</strong> inject malicious scripts into webpage.<br><strong>Types:</strong> Stored (database), Reflected (URL), DOM-based.<br><br><strong>Prevention:</strong><ol><li>Escape/sanitize user input</li><li>Use textContent instead of innerHTML</li><li>CSP headers</li><li>DOMPurify library</li></ol><br><pre>// VULNERABLE
-elem.innerHTML = userInput; // if userInput = '<img src=x onerror="alert()">'  
-
-// SAFE
-elem.textContent = userInput; // displays as text
-
-// SAFE with HTML
-const sanitized = DOMPurify.sanitize(userInput);
-elem.innerHTML = sanitized;
-
-// CSP header
-Content-Security-Policy: script-src 'self';</pre>"},
+     a:"<strong>XSS attack:</strong> inject malicious scripts into webpage.<br><strong>Types:</strong> Stored (database), Reflected (URL), DOM-based.<br><br><strong>Prevention:</strong><ol><li>Escape/sanitize user input</li><li>Use textContent instead of innerHTML</li><li>CSP headers</li><li>DOMPurify library</li></ol><br><pre>// VULNERABLE\nelem.innerHTML = userInput; // if userInput = '<img src=x onerror=\"alert()\">'  \n\n// SAFE\nelem.textContent = userInput; // displays as text\n\n// SAFE with HTML\nconst sanitized = DOMPurify.sanitize(userInput);\nelem.innerHTML = sanitized;\n\n// CSP header\nContent-Security-Policy: script-src 'self';</pre>"},
     {q:"What is CORS and preflight requests?",d:"hard",
-     a:"<strong>CORS (Cross-Origin Resource Sharing)</strong> allows cross-origin requests.<br><strong>Preflight:</strong> browser sends OPTIONS before POST/PUT/DELETE with custom headers.<br><pre>// Simple request (no preflight)
-GET, POST (application/x-www-form-urlencoded)
-
-// Preflight required
-PUT, DELETE, POST (application/json), Custom headers
-
-// Server response
-Access-Control-Allow-Origin: https://example.com
-Access-Control-Allow-Methods: GET, POST, PUT
-Access-Control-Allow-Headers: Content-Type, Authorization
-Access-Control-Allow-Credentials: true
-
-// Client request
-fetch('https://api.other.com/data', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  credentials: 'include' // send cookies
-});</pre>"},
+     a:"<strong>CORS (Cross-Origin Resource Sharing)</strong> allows cross-origin requests.<br><strong>Preflight:</strong> browser sends OPTIONS before POST/PUT/DELETE with custom headers.<br><pre>// Simple request (no preflight)\nGET, POST (application/x-www-form-urlencoded)\n\n// Preflight required\nPUT, DELETE, POST (application/json), Custom headers\n\n// Server response\nAccess-Control-Allow-Origin: https://example.com\nAccess-Control-Allow-Methods: GET, POST, PUT\nAccess-Control-Allow-Headers: Content-Type, Authorization\nAccess-Control-Allow-Credentials: true\n\n// Client request\nfetch('https://api.other.com/data', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  credentials: 'include' // send cookies\n});</pre>"},
     {q:"What is prototype pollution and how to prevent it?",d:"hard",
-     a:"<strong>Prototype pollution:</strong> attacker modifies Object.prototype affecting all objects.<br><pre>// Vulnerable
-const obj = JSON.parse('{"__proto__":{"admin":true}}');
-const user = {};
-user.admin; // true — POLLUTED!
-
-// Attack payload
-{"__proto__":{"isAdmin":true}}
-
-// Prevention
-1. Avoid recursively merging untrusted data
-2. Use Object.create(null) for data objects
-3. Validate and sanitize input
-4. Use libraries (lodash.merge() is safer)
-
-const safe = Object.create(null);
-safe.x = 1; // won't pollute prototype
-
-// Safe merge
-function safeMerge(target, source) {
-  for (const key of Object.keys(source)) {
-    if (key !== '__proto__' && key !== 'constructor') {
-      target[key] = source[key];
-    }
-  }
-  return target;
-}</pre>"},
+     a:"<strong>Prototype pollution:</strong> attacker modifies Object.prototype affecting all objects.<br><pre>// Vulnerable\nconst obj = JSON.parse('{\"__proto__\":{\"admin\":true}}');\nconst user = {};\nuser.admin; // true — POLLUTED!\n\n// Attack payload\n{\"__proto__\":{\"isAdmin\":true}}\n\n// Prevention\n1. Avoid recursively merging untrusted data\n2. Use Object.create(null) for data objects\n3. Validate and sanitize input\n4. Use libraries (lodash.merge() is safer)\n\nconst safe = Object.create(null);\nsafe.x = 1; // won't pollute prototype\n\n// Safe merge\nfunction safeMerge(target, source) {\n  for (const key of Object.keys(source)) {\n    if (key !== '__proto__' && key !== 'constructor') {\n      target[key] = source[key];\n    }\n  }\n  return target;\n}</pre>"},
     {q:"What is Same-Origin Policy (SOP)?",d:"medium",
-     a:"<strong>SOP</strong> restricts scripts from accessing data from different origins without permission.<br><pre>// Same origin: protocol, domain, port all match
-https://example.com:443
-
-// Different origins (blocked by SOP)
-https://example.com/      // different port
-http://example.com/       // different protocol
-https://sub.example.com/  // different subdomain
-
-// What SOP restricts
-XMLHttpRequest, fetch  // blocked
-iframes (with access)  // blocked
-web storage access     // blocked
-cookies (partially)    // restricted
-
-// Exceptions
-<script src='https://other.com/lib.js'> <!-- allowed -->
-<img src='https://other.com/pic.jpg'>   <!-- allowed -->
-<style>@import url(...)</style>          <!-- allowed -->
-fetch() / XHR                            <!-- blocked --></pre>"},
+     a:"<strong>SOP</strong> restricts scripts from accessing data from different origins without permission.<br><pre>// Same origin: protocol, domain, port all match\nhttps://example.com:443\n\n// Different origins (blocked by SOP)\nhttps://example.com/      // different port\nhttp://example.com/       // different protocol\nhttps://sub.example.com/  // different subdomain\n\n// What SOP restricts\nXMLHttpRequest, fetch  // blocked\niframes (with access)  // blocked\nweb storage access     // blocked\ncookies (partially)    // restricted\n\n// Exceptions\n<script src='https://other.com/lib.js'> <!-- allowed -->\n<img src='https://other.com/pic.jpg'>   <!-- allowed -->\n<style>@import url(...)</style>          <!-- allowed -->\nfetch() / XHR                            <!-- blocked --></pre>"},
 
     // ── BATCH 15: DevTools & Monitoring ────────────────────────────────────
     {q:"What are DevTools console methods?",d:"easy",
-     a:"<strong>Beyond console.log():</strong><br><pre>console.log('info');       // normal
-console.warn('warning');   // yellow
-console.error('error');    // red
-console.debug('debug');    // debug level
-console.info('info');      // info level
-
-console.table([{a:1},{a:2}]); // table format
-console.dir(obj);          // object properties
-console.dirxml(elem);      // DOM element
-
-console.assert(x > 0, 'x must be positive');
-console.clear();           // clear console
-
-// Grouping
-console.group('User');
-console.log('Name: Alice');
-console.log('Age: 30');
-console.groupEnd();
-
-// Timing
-console.time('operation');
-// code here
-console.timeEnd('operation'); // logs elapsed ms
-
-// Stack trace
-console.trace();</pre>"},
+     a:"<strong>Beyond console.log():</strong><br><pre>console.log('info');       // normal\nconsole.warn('warning');   // yellow\nconsole.error('error');    // red\nconsole.debug('debug');    // debug level\nconsole.info('info');      // info level\n\nconsole.table([{a:1},{a:2}]); // table format\nconsole.dir(obj);          // object properties\nconsole.dirxml(elem);      // DOM element\n\nconsole.assert(x > 0, 'x must be positive');\nconsole.clear();           // clear console\n\n// Grouping\nconsole.group('User');\nconsole.log('Name: Alice');\nconsole.log('Age: 30');\nconsole.groupEnd();\n\n// Timing\nconsole.time('operation');\n// code here\nconsole.timeEnd('operation'); // logs elapsed ms\n\n// Stack trace\nconsole.trace();</pre>"},
     {q:"What is source mapping and SourceMap?",d:"hard",
-     a:"<strong>SourceMap</strong> maps minified code back to original source for debugging.<br><pre>// Minified bundle: app.min.js (hard to debug)
-const x=()=>{console.log(1)};
-
-// SourceMap: app.min.js.map
-{
-  "version": 3,
-  "sources": ["app.js"],
-  "mappings": "AAAA,IAAM..."
-}
-
-// In minified file
-//# sourceMappingURL=app.min.js.map
-
-// DevTools shows original code when debugging</pre><br><strong>Generation:</strong> Webpack, Rollup, Parcel auto-generate sourcemaps in development."},
+     a:"<strong>SourceMap</strong> maps minified code back to original source for debugging.<br><pre>// Minified bundle: app.min.js (hard to debug)\nconst x=()=>{console.log(1)};\n\n// SourceMap: app.min.js.map\n{\n  \"version\": 3,\n  \"sources\": [\"app.js\"],\n  \"mappings\": \"AAAA,IAAM...\"\n}\n\n// In minified file\n//# sourceMappingURL=app.min.js.map\n\n// DevTools shows original code when debugging</pre><br><strong>Generation:</strong> Webpack, Rollup, Parcel auto-generate sourcemaps in development."},
     {q:"What is memory leak detection?",d:"hard",
-     a:"<strong>Memory leaks occur when objects aren't garbage collected.</strong><br><strong>Common causes:</strong><br><ul><li>Dangling event listeners</li><li>Circular references</li><li>Global variables</li><li>Timers (setTimeout, setInterval) not cleared</li><li>DOM nodes detached but still referenced</li></ul><br><pre>// Memory leak
-const detached = document.getElementById('node');
-const obj = { ref: detached };
-detached.remove(); // removed from DOM but still in memory!
-
-// Fix
-detached = null; // release reference
-
-// Detect with DevTools
-1. Open DevTools → Memory
-2. Take heap snapshot
-3. Perform action
-4. Take another snapshot
-5. Compare (growth = leak)</pre>"},
+     a:"<strong>Memory leaks occur when objects aren't garbage collected.</strong><br><strong>Common causes:</strong><br><ul><li>Dangling event listeners</li><li>Circular references</li><li>Global variables</li><li>Timers (setTimeout, setInterval) not cleared</li><li>DOM nodes detached but still referenced</li></ul><br><pre>// Memory leak\nconst detached = document.getElementById('node');\nconst obj = { ref: detached };\ndetached.remove(); // removed from DOM but still in memory!\n\n// Fix\ndetached = null; // release reference\n\n// Detect with DevTools\n1. Open DevTools → Memory\n2. Take heap snapshot\n3. Perform action\n4. Take another snapshot\n5. Compare (growth = leak)</pre>"},
     {q:"What is Node.js debugging?",d:"hard",
-     a:"<strong>Debug Node.js with --inspect flag:</strong><br><pre>node --inspect app.js
-node --inspect-brk app.js  // break on first line
-
-// DevTools URL: chrome://inspect
-// Or use debugger statement
-
-debugger; // execution pauses here
-const x = 42; // inspect x when paused</pre><br><strong>VSCode:</strong><br><pre>// .vscode/launch.json
-{
-  "version": "0.2.0",
-  "configurations": [{
-    "type": "node",
-    "request": "launch",
-    "program": "${workspaceFolder}/app.js"
-  }]
-}</pre>"},
+     a:"<strong>Debug Node.js with --inspect flag:</strong><br><pre>node --inspect app.js\nnode --inspect-brk app.js  // break on first line\n\n// DevTools URL: chrome://inspect\n// Or use debugger statement\n\ndebugger; // execution pauses here\nconst x = 42; // inspect x when paused</pre><br><strong>VSCode:</strong><br><pre>// .vscode/launch.json\n{\n  \"version\": \"0.2.0\",\n  \"configurations\": [{\n    \"type\": \"node\",\n    \"request\": \"launch\",\n    \"program\": \"${workspaceFolder}/app.js\"\n  }]\n}</pre>"},
     {q:"What is the error stack and how to read it?",d:"medium",
-     a:"<strong>Error stack trace shows function call chain:</strong><br><pre>Error: Something went wrong
-    at functionA (app.js:10:5)
-    at functionB (app.js:20:3)
-    at Object.<anonymous> (app.js:30:1)
-    at Module._load (internal/modules/cjs/loader.js:926:23)
-
-// Format: at function (filename:line:column)
-
-// Create custom error with stack
-try {
-  doSomething();
-} catch (e) {
-  console.log(e.stack); // full stack
-  console.log(e.message);
-  console.log(e.name);
-}</pre><br><strong>Source maps needed to map to original code.</strong>"}
+     a:"<strong>Error stack trace shows function call chain:</strong><br><pre>Error: Something went wrong\n    at functionA (app.js:10:5)\n    at functionB (app.js:20:3)\n    at Object.<anonymous> (app.js:30:1)\n    at Module._load (internal/modules/cjs/loader.js:926:23)\n\n// Format: at function (filename:line:column)\n\n// Create custom error with stack\ntry {\n  doSomething();\n} catch (e) {\n  console.log(e.stack); // full stack\n  console.log(e.message);\n  console.log(e.name);\n}</pre><br><strong>Source maps needed to map to original code.</strong>"}
   );
-
-);
