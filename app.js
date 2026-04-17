@@ -29,11 +29,11 @@ const SECTION_CONFIG = {
   }
 };
 
-// Category mapping for backend topics
+// Category mapping for backend topics (by topic ID)
 const BACKEND_CATEGORIES = {
-  core: ['java', 'spring', 'test'],
-  advanced: ['arch'],
-  infra: ['data', 'infra']
+  core: ['java', 'threads', 'dsa', 'performance', 'maven', 'spring', 'hibernate', 'rest', 'security', 'grpc', 'reactive', 'testing'],
+  advanced: ['patterns', 'solid', 'microservices', 'hld', 'ai'],
+  infra: ['sql', 'redis', 'docker', 'aws', 'kubernetes', 'kafka', 'observability', 'cicd']
 };
 
 // Topic section assignment
