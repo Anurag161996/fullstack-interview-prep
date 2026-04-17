@@ -8,45 +8,177 @@ const ALL_TOPICS = [
   SEC_JS
 ];
 
+let curSection = 'landing'; // 'landing', 'frontend', 'backend'
 let curFilter = 'all';
 let curTopic  = null;
 let curDiff   = 'all';
 
+// ── SECTION CONFIGURATION ────────────────────────────────────────────────────
+const SECTION_CONFIG = {
+  frontend: {
+    chip: '📚 Frontend Interview Guide',
+    heading: 'Master Your <span class="ca">Frontend</span> Interview with <span class="cg">Confidence</span>',
+    subheading: 'Learn 140+ frontend Q&As on JavaScript, React, and modern web development.',
+    categories: { all: 'All', javascript: 'JavaScript', react: 'React' }
+  },
+  backend: {
+    chip: '📚 Backend Interview Guide',
+    heading: 'Master Your <span class="ca">Backend</span> Interview with <span class="cg">Confidence</span>',
+    subheading: 'Learn 530+ backend Q&As across Java, Spring, infrastructure, and advanced architecture.',
+    categories: { all: 'All', core: 'Core Backend', advanced: 'Advanced Topics', infra: 'Infrastructure & Data' }
+  }
+};
+
+// Category mapping for backend topics
+const BACKEND_CATEGORIES = {
+  core: ['java', 'spring', 'test'],
+  advanced: ['arch'],
+  infra: ['data', 'infra']
+};
+
+// Topic section assignment
+const TOPIC_SECTIONS = {
+  frontend: ['javascript', 'react'],
+  backend: ['java', 'spring', 'hibernate', 'threads', 'sql', 'rest', 'redis', 'kafka', 'hld', 'microservices', 'docker', 'aws', 'kubernetes', 'observability', 'performance', 'security', 'grpc', 'reactive', 'cicd', 'ai', 'testing', 'patterns', 'solid', 'maven', 'dsa']
+};
+
 // ── INIT ─────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
   updateStats();
-  renderGrid();
-  // Support deep links and page refresh with hash
-  const id = location.hash.slice(1);
-  if (id) {
-    curTopic = ALL_TOPICS.find(t => t.id === id);
-    if (curTopic) {
+
+  // Handle routing based on hash
+  const hash = location.hash.slice(1);
+  if (hash === 'frontend') {
+    showSection('frontend');
+  } else if (hash === 'backend') {
+    showSection('backend');
+  } else {
+    // Check if hash is a topic ID
+    const topic = ALL_TOPICS.find(t => t.id === hash);
+    if (topic) {
+      // Infer section from topic
+      if (TOPIC_SECTIONS.frontend.includes(hash)) {
+        curSection = 'frontend';
+      } else {
+        curSection = 'backend';
+      }
+      curTopic = topic;
       curDiff = 'all';
-      history.replaceState({ topicId: id }, '', '#' + id);
-      _activateTopic();
+      renderTopic();
+      document.getElementById('landingView').classList.add('off');
+      document.getElementById('homeView').classList.add('on');
+    } else {
+      // No hash or unknown - show landing
+      showLanding();
     }
   }
 });
 
 window.addEventListener('popstate', () => {
-  const id = location.hash.slice(1);
-  if (id) {
-    const topic = ALL_TOPICS.find(t => t.id === id);
-    if (topic) {
-      curTopic = topic;
-      curDiff = 'all';
-      document.getElementById('homeView').classList.add('off');
-      document.getElementById('topicView').classList.add('on');
-      window.scrollTo(0, 0);
-      renderTopic();
-      return;
-    }
+  const hash = location.hash.slice(1);
+
+  // Check if it's a section
+  if (hash === 'frontend') {
+    showSection('frontend');
+    return;
+  } else if (hash === 'backend') {
+    showSection('backend');
+    return;
   }
+
+  // Check if it's a topic
+  const topic = ALL_TOPICS.find(t => t.id === hash);
+  if (topic) {
+    if (TOPIC_SECTIONS.frontend.includes(hash)) {
+      curSection = 'frontend';
+    } else {
+      curSection = 'backend';
+    }
+    curTopic = topic;
+    curDiff = 'all';
+    document.getElementById('homeView').classList.add('on');
+    document.getElementById('topicView').classList.add('on');
+    window.scrollTo(0, 0);
+    renderTopic();
+    return;
+  }
+
+  // No hash or unknown - go to landing
+  showLanding();
+});
+
+// ── SECTIONS ──────────────────────────────────────────────────────────────────
+function showLanding() {
+  curSection = 'landing';
+  curTopic = null;
+  curFilter = 'all';
+  document.getElementById('landingView').classList.remove('off');
+  document.getElementById('homeView').classList.add('off');
+  document.getElementById('topicView').classList.remove('on');
+  window.scrollTo(0, 0);
+  history.pushState({ section: 'landing' }, '', location.pathname);
+  renderLanding();
+}
+
+function showSection(section) {
+  if (section !== 'frontend' && section !== 'backend') return;
+  curSection = section;
+  curTopic = null;
+  curFilter = 'all';
+  document.getElementById('landingView').classList.add('off');
   document.getElementById('homeView').classList.remove('off');
   document.getElementById('topicView').classList.remove('on');
-  curTopic = null;
   window.scrollTo(0, 0);
-});
+  history.pushState({ section: section }, '', '#' + section);
+  renderGrid();
+}
+
+function renderLanding() {
+  const landingCards = document.getElementById('landingCards');
+  landingCards.innerHTML = `
+    <div class="landing-cards-container">
+      <div class="lcard" onclick="showSection('frontend')">
+        <div class="lcard-icon">⚛️</div>
+        <div class="lcard-title">Frontend</div>
+        <div class="lcard-topics">2 topics</div>
+        <div class="lcard-questions">140+ Q&As</div>
+        <div class="lcard-desc">JavaScript, React</div>
+        <div class="lcard-btn">Explore →</div>
+      </div>
+      <div class="lcard" onclick="showSection('backend')">
+        <div class="lcard-icon">☕</div>
+        <div class="lcard-title">Backend</div>
+        <div class="lcard-topics">23 topics</div>
+        <div class="lcard-questions">530+ Q&As</div>
+        <div class="lcard-desc">Java, Spring, AWS</div>
+        <div class="lcard-btn">Explore →</div>
+      </div>
+    </div>
+  `;
+}
+
+function updateHeroSection() {
+  const config = SECTION_CONFIG[curSection];
+  const hero = document.querySelector('.hero-chip');
+  const heroH1 = document.querySelector('.hero-inner h1');
+  const heroSub = document.querySelector('.hero-sub');
+
+  if (hero) hero.textContent = config.chip;
+  if (heroH1) heroH1.innerHTML = config.heading;
+  if (heroSub) heroSub.textContent = config.subheading;
+}
+
+function updateFilterButtons() {
+  const filterRow = document.getElementById('filterRow');
+  if (!filterRow) return;
+
+  const config = SECTION_CONFIG[curSection];
+  const categories = config.categories;
+
+  filterRow.innerHTML = Object.entries(categories).map(([key, label]) => `
+    <button class="fp ${curFilter === key ? 'on' : ''}" onclick="setF('${key}',this)">${label}</button>
+  `).join('');
+}
 
 function updateStats() {
   const total = ALL_TOPICS.reduce((s, t) => s + t.qs.length, 0);
@@ -63,10 +195,32 @@ function renderGrid() {
   const lbl  = document.getElementById('gridLbl');
   if (!grid) return;
 
-  let topics = curFilter === 'all'
-    ? ALL_TOPICS
-    : ALL_TOPICS.filter(t => t.grp === curFilter);
+  // Update hero section based on current section
+  updateHeroSection();
 
+  // Update filter buttons based on section
+  updateFilterButtons();
+
+  // Filter topics by section
+  let topics = curSection === 'frontend'
+    ? ALL_TOPICS.filter(t => TOPIC_SECTIONS.frontend.includes(t.id))
+    : ALL_TOPICS.filter(t => TOPIC_SECTIONS.backend.includes(t.id));
+
+  // Apply category filter
+  if (curFilter !== 'all') {
+    if (curSection === 'frontend') {
+      topics = topics.filter(t => t.id === curFilter);
+    } else {
+      // Backend section - filter by category groups
+      const categoryTopics = [];
+      for (const grp of BACKEND_CATEGORIES[curFilter]) {
+        categoryTopics.push(...topics.filter(t => t.grp === grp));
+      }
+      topics = categoryTopics;
+    }
+  }
+
+  // Apply search filter
   if (q) {
     topics = topics.filter(t =>
       t.title.toLowerCase().includes(q) ||
@@ -126,6 +280,16 @@ function showTopic(id) {
   curTopic = ALL_TOPICS.find(t => t.id === id);
   if (!curTopic) return;
   curDiff = 'all';
+
+  // Infer section if not already set
+  if (!curSection || curSection === 'landing') {
+    if (TOPIC_SECTIONS.frontend.includes(id)) {
+      curSection = 'frontend';
+    } else {
+      curSection = 'backend';
+    }
+  }
+
   history.pushState({ topicId: id }, '', '#' + id);
   _activateTopic();
 }
@@ -194,18 +358,28 @@ function setDiff(d) {
 }
 
 function goHome() {
-  history.pushState(null, '', location.pathname);
-  document.getElementById('homeView').classList.remove('off');
-  const tv = document.getElementById('topicView');
-  tv.classList.remove('on');
-  curTopic = null;
-  window.scrollTo(0, 0);
+  // If viewing a topic, go back to section grid
+  // Otherwise, go to landing
+  if (curTopic) {
+    curTopic = null;
+    document.getElementById('topicView').classList.remove('on');
+    window.scrollTo(0, 0);
+    if (curSection === 'frontend' || curSection === 'backend') {
+      history.pushState({ section: curSection }, '', '#' + curSection);
+    } else {
+      showLanding();
+    }
+  } else {
+    showLanding();
+  }
 }
 
 function setF(filter, btn) {
   curFilter = filter;
-  document.querySelectorAll('.fp').forEach(b => b.classList.remove('on'));
-  btn.classList.add('on');
+  if (btn) {
+    document.querySelectorAll('.fp').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+  }
   renderGrid();
 }
 

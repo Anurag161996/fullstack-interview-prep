@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Java Interview Prep — Senior Backend</title>
+<title>Frontend & Backend Interview Questions — InterviewPrep</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="styles.css"/>
 </head>
@@ -11,7 +11,7 @@
 
 <!-- NAV -->
 <nav class="nav">
-  <a class="logo" href="#" onclick="goHome();return false;">Java<em>Prep</em></a>
+  <a class="logo" href="#" onclick="goHome();return false;">Interview<em>Prep</em></a>
   <div class="nsearch">
     <span class="nsearch-icon">⌕</span>
     <input type="text" id="gSearch" placeholder="Search topics or questions…" oninput="onSearch()" autocomplete="off"/>
@@ -22,8 +22,22 @@
 <!-- APP -->
 <div id="mainApp">
 
+  <!-- LANDING -->
+  <div id="landingView">
+    <div class="hero">
+      <div class="hero-glow"></div>
+      <div class="hero-inner">
+        <h1>Become an Expert:<br><span class="ca">Frontend & Backend</span><br><span class="cg">Interview Guide</span></h1>
+        <p class="hero-sub">Master 670+ interview questions across frontend and backend — from JavaScript to Java, React to microservices.</p>
+      </div>
+    </div>
+    <div class="wrap">
+      <div class="landing-cards" id="landingCards"></div>
+    </div>
+  </div>
+
   <!-- HOME -->
-  <div id="homeView">
+  <div id="homeView" class="off">
     <div class="hero">
       <div class="hero-glow"></div>
       <div class="hero-inner">
