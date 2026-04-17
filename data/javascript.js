@@ -722,24 +722,6 @@ greet.apply(person, ['Hi', '?']);    // 'Hi Alice?'
 const bound = greet.bind(person, 'Hey');
 bound('!'); // 'Hey Alice!'
 bound('?'); // 'Hey Alice?'</pre>"},
-    {q:"What is a pure function?",d:"easy",
-     a:"<strong>A pure function</strong> always returns the same output for the same input and has no side effects.<br><pre>// Pure
-function add(a, b) { return a + b; }
-add(2, 3); // always 5
-
-// NOT pure — uses external state
-let global = 10;
-function impure(x) { return x + global; } // depends on global
-
-// NOT pure — modifies external state
-const obj = { x: 1 };
-function mutate(o) { o.x = 2; return o; } // side effect
-
-// NOT pure — side effect (I/O)
-function log(msg) {
-  console.log(msg); // side effect
-  return msg;
-}</pre><br><strong>Benefits:</strong> predictable, testable, cacheable, parallelizable."},
     {q:"What is currying?",d:"medium",
      a:"<strong>Currying</strong> converts a function with multiple parameters into a series of functions with single parameters.<br><pre>// Regular function
 function add(a, b, c) { return a + b + c; }
@@ -1083,20 +1065,6 @@ outer.addEventListener('click', handler, true);
 // Bubbling phase (goes up)
 outer.addEventListener('click', handler, false); // default
 outer.addEventListener('click', handler); // default = false</pre><br><strong>Order:</strong> 1) Capturing down, 2) Target, 3) Bubbling up.<br><br><strong>Practical:</strong> use bubbling for event delegation, use capturing for early interception."},
-    {q:"What is event delegation?",d:"medium",
-     a:"<strong>Event delegation:</strong> attach listener to parent to handle child events (via bubbling).<br><pre>// Instead of:
-const items = document.querySelectorAll('li');
-items.forEach(li => {
-  li.addEventListener('click', handler);
-});
-
-// Use delegation:
-const list = document.getElementById('list');
-list.addEventListener('click', (e) => {
-  if (e.target.tagName === 'LI') {
-    // handle li click
-  }
-});</pre><br><strong>Benefits:</strong> fewer listeners, handles dynamically added elements, better memory."},
     {q:"What is stopPropagation() vs stopImmediatePropagation()?",d:"hard",
      a:"<strong>stopPropagation():</strong> stop bubbling to parent, but other listeners on same element still fire.<br><strong>stopImmediatePropagation():</strong> stop all propagation and other listeners on same element.<br><pre>element.addEventListener('click', (e) => {
   console.log('1');
@@ -1436,20 +1404,6 @@ const About = lazy(() => import('./pages/About'));
 <Suspense fallback={<Loading />}>
   <Component />
 </Suspense></pre><br><strong>Benefits:</strong> smaller initial bundle, faster first load, lazy routes."},
-    {q:"What is tree shaking?",d:"hard",
-     a:"<strong>Tree shaking</strong> removes unused code during bundling.<br><pre>// module.js
-export function used() { return 42; }
-export function unused() { return 0; }
-
-// main.js
-import { used } from './module';
-console.log(used()); // unused() never called
-
-// With tree shaking enabled, bundler removes unused()</pre><br><strong>Requirements:</strong><ul><li>ES modules (import/export)</li><li>Bundler support (Webpack, Rollup, Parcel)</li><li>Package.json has sideEffects: false</li></ul><br><pre>// package.json
-{
-  "sideEffects": false, // no side effects = safe to remove
-  "type": "module"
-}</pre>"},
     {q:"What is webpack Hot Module Replacement (HMR)?",d:"hard",
      a:"<strong>HMR</strong> allows modules to be updated without full page reload during development.<br><pre>// webpack.config.js
 module.exports = {
@@ -1493,28 +1447,6 @@ elem.innerHTML = sanitized;
 
 // CSP header
 Content-Security-Policy: script-src 'self';</pre>"},
-    {q:"What is Content Security Policy (CSP)?",d:"hard",
-     a:"<strong>CSP</strong> is HTTP header limiting which resources can load.<br><pre>// header
-Content-Security-Policy: script-src 'self' https://trusted.com
-
-// In meta tag
-<meta http-equiv='Content-Security-Policy' content="script-src 'self'">
-
-// Directives
-script-src       // scripts
-style-src        // stylesheets
-img-src          // images
-font-src         // fonts
-connect-src      // fetch, XHR, WebSocket
-frame-src        // iframes
-object-src       // plugins
-
-// Values
-'self'           // same origin
-https:           // HTTPS only
-domain.com       // specific domain
-'unsafe-inline'  // allow inline (not recommended)
-'nonce-RANDOM'   // inline script with nonce</pre>"},
     {q:"What is CORS and preflight requests?",d:"hard",
      a:"<strong>CORS (Cross-Origin Resource Sharing)</strong> allows cross-origin requests.<br><strong>Preflight:</strong> browser sends OPTIONS before POST/PUT/DELETE with custom headers.<br><pre>// Simple request (no preflight)
 GET, POST (application/x-www-form-urlencoded)
