@@ -5,7 +5,7 @@ const ALL_TOPICS = [
   SEC_DOCKER, SEC_AWS, SEC_K8S, SEC_OBS, SEC_PERF, SEC_SEC,
   SEC_GRPC, SEC_REACTIVE, SEC_CICD, SEC_AI,
   SEC_TESTING, SEC_PATTERNS, SEC_SOLID, SEC_MAVEN, SEC_DSA, SEC_REACT,
-  SEC_JS
+  SEC_JS, SEC_NEXTJS
 ];
 
 let curSection = 'landing'; // 'landing', 'frontend', 'backend'
@@ -18,8 +18,8 @@ const SECTION_CONFIG = {
   frontend: {
     chip: '📚 Frontend Interview Guide',
     heading: 'Master Your <span class="ca">Frontend</span> Interview with <span class="cg">Confidence</span>',
-    subheading: 'Learn 379 frontend Q&As on JavaScript, React, and modern web development.',
-    categories: { all: 'All', javascript: 'JavaScript', react: 'React' }
+    subheading: 'Learn 479 frontend Q&As on JavaScript, React, Next.js, and modern web development.',
+    categories: { all: 'All', javascript: 'JavaScript', react: 'React', nextjs: 'Next.js' }
   },
   backend: {
     chip: '📚 Backend Interview Guide',
@@ -38,7 +38,7 @@ const BACKEND_CATEGORIES = {
 
 // Topic section assignment
 const TOPIC_SECTIONS = {
-  frontend: ['javascript', 'react'],
+  frontend: ['javascript', 'react', 'nextjs'],
   backend: ['java', 'spring', 'hibernate', 'threads', 'sql', 'rest', 'redis', 'kafka', 'hld', 'microservices', 'docker', 'aws', 'kubernetes', 'observability', 'performance', 'security', 'grpc', 'reactive', 'cicd', 'ai', 'testing', 'patterns', 'solid', 'maven', 'dsa']
 };
 
@@ -140,9 +140,9 @@ function renderLanding() {
       <div class="lcard" onclick="showSection('frontend')">
         <div class="lcard-icon">⚛️</div>
         <div class="lcard-title">Frontend</div>
-        <div class="lcard-topics">2 topics</div>
-        <div class="lcard-questions">379 Q&As</div>
-        <div class="lcard-desc">JavaScript, React</div>
+        <div class="lcard-topics">3 topics</div>
+        <div class="lcard-questions">479 Q&As</div>
+        <div class="lcard-desc">JavaScript, React, Next.js</div>
         <div class="lcard-btn">Explore →</div>
       </div>
       <div class="lcard" onclick="showSection('backend')">
