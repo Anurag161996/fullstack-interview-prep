@@ -40,7 +40,15 @@ body{background:var(--bg);color:var(--tx);font-family:var(--fb);font-size:15px;l
 .hero h1 .ca{color:var(--ac);}
 .hero h1 .cg{color:var(--g);}
 .hero-sub{color:var(--t2);font-size:15px;max-width:480px;margin:0 auto 22px;line-height:1.7;}
+
+/* ── SECTION SWITCHER ──────────────────── */
+.section-switcher{display:flex;justify-content:center;gap:8px;margin:14px 0 20px;flex-wrap:wrap;}
+.section-btn{padding:8px 18px;border:1px solid var(--b1);border-radius:99px;font-size:13px;cursor:pointer;background:transparent;color:var(--t2);font-family:var(--fb);transition:all .2s;white-space:nowrap;font-weight:600;letter-spacing:.01em;}
+.section-btn:hover{background:var(--bg3);color:var(--tx);border-color:var(--b2);transform:translateY(-2px);}
+.section-btn.on{background:rgba(108,99,255,.16);border-color:rgba(108,99,255,.5);color:#b5b0ff;box-shadow:0 4px 12px rgba(108,99,255,.18);}
 @media(max-width:480px){
+  .section-switcher{gap:6px;margin:12px 0 16px;}
+  .section-btn{padding:7px 14px;font-size:12px;}
   .hero{padding:70px 16px 30px;}
   .hero-chip{font-size:11px;padding:4px 12px;}
   .hero h1{font-size:1.75rem;}

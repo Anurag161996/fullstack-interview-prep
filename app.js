@@ -64,6 +64,7 @@ window.addEventListener('DOMContentLoaded', () => {
       }
       curTopic = topic;
       curDiff = 'all';
+      updateSectionButtons();
       renderTopic();
       document.getElementById('landingView').classList.add('off');
       document.getElementById('homeView').classList.add('on');
@@ -96,6 +97,7 @@ window.addEventListener('popstate', () => {
     }
     curTopic = topic;
     curDiff = 'all';
+    updateSectionButtons();
     document.getElementById('homeView').classList.add('on');
     document.getElementById('topicView').classList.add('on');
     window.scrollTo(0, 0);
@@ -120,6 +122,19 @@ function showLanding() {
   renderLanding();
 }
 
+function updateSectionButtons() {
+  const frontendBtn = document.getElementById('frontendBtn');
+  const backendBtn = document.getElementById('backendBtn');
+
+  if (curSection === 'frontend') {
+    frontendBtn?.classList.add('on');
+    backendBtn?.classList.remove('on');
+  } else if (curSection === 'backend') {
+    backendBtn?.classList.add('on');
+    frontendBtn?.classList.remove('on');
+  }
+}
+
 function showSection(section) {
   if (section !== 'frontend' && section !== 'backend') return;
   curSection = section;
@@ -130,6 +145,7 @@ function showSection(section) {
   document.getElementById('topicView').classList.remove('on');
   window.scrollTo(0, 0);
   history.pushState({ section: section }, '', '#' + section);
+  updateSectionButtons();
   renderGrid();
 }
 
