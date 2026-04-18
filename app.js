@@ -31,15 +31,15 @@ const SECTION_CONFIG = {
 
 // Category mapping for backend topics (by topic ID)
 const BACKEND_CATEGORIES = {
-  core: ['java', 'threads', 'dsa', 'performance', 'maven', 'spring', 'hibernate', 'rest', 'security', 'grpc', 'reactive', 'testing'],
-  advanced: ['patterns', 'solid', 'microservices', 'hld', 'ai'],
-  infra: ['sql', 'redis', 'docker', 'aws', 'kubernetes', 'kafka', 'observability', 'cicd']
+  core: ['java', 'multithreading', 'dsa', 'perf', 'maven', 'springboot', 'hibernate', 'restapi', 'security', 'grpc', 'reactive', 'testing'],
+  advanced: ['designpatterns', 'solid', 'microservices', 'hld', 'ai'],
+  infra: ['sql', 'redis', 'docker', 'aws', 'k8s', 'kafka', 'obs', 'cicd']
 };
 
 // Topic section assignment
 const TOPIC_SECTIONS = {
   frontend: ['javascript', 'react', 'nextjs'],
-  backend: ['java', 'spring', 'hibernate', 'threads', 'sql', 'rest', 'redis', 'kafka', 'hld', 'microservices', 'docker', 'aws', 'kubernetes', 'observability', 'performance', 'security', 'grpc', 'reactive', 'cicd', 'ai', 'testing', 'patterns', 'solid', 'maven', 'dsa']
+  backend: ['java', 'springboot', 'hibernate', 'multithreading', 'sql', 'restapi', 'redis', 'kafka', 'hld', 'microservices', 'docker', 'aws', 'k8s', 'obs', 'perf', 'security', 'grpc', 'reactive', 'cicd', 'ai', 'testing', 'designpatterns', 'solid', 'maven', 'dsa']
 };
 
 // ── INIT ─────────────────────────────────────────────────────────────────────
@@ -98,7 +98,7 @@ window.addEventListener('popstate', () => {
     curTopic = topic;
     curDiff = 'all';
     updateSectionButtons();
-    document.getElementById('homeView').classList.add('on');
+    document.getElementById('homeView').classList.remove('off');
     document.getElementById('topicView').classList.add('on');
     window.scrollTo(0, 0);
     renderTopic();
@@ -150,24 +150,55 @@ function showSection(section) {
 }
 
 function renderLanding() {
+  const feTopics = ALL_TOPICS.filter(t => TOPIC_SECTIONS.frontend.includes(t.id));
+  const beTopics = ALL_TOPICS.filter(t => TOPIC_SECTIONS.backend.includes(t.id));
+  const feQ = feTopics.reduce((s, t) => s + t.qs.length, 0);
+  const beQ = beTopics.reduce((s, t) => s + t.qs.length, 0);
+
   const landingCards = document.getElementById('landingCards');
   landingCards.innerHTML = `
     <div class="landing-cards-container">
-      <div class="lcard" onclick="showSection('frontend')">
-        <div class="lcard-icon">⚛️</div>
-        <div class="lcard-title">Frontend</div>
-        <div class="lcard-topics">3 topics</div>
-        <div class="lcard-questions">483 Q&As</div>
-        <div class="lcard-desc">JavaScript, React, Next.js</div>
-        <div class="lcard-btn">Explore →</div>
+      <div class="lcard lcard-fe" onclick="showSection('frontend')">
+        <div class="lcard-header">
+          <div class="lcard-icon">⚛️</div>
+          <div class="lcard-meta">
+            <div class="lcard-title">Frontend</div>
+            <div class="lcard-topics">${feTopics.length} topics</div>
+          </div>
+          <div class="lcard-qcount">${feQ}<span>Q&amp;As</span></div>
+        </div>
+        <p class="lcard-desc">Master modern web development — from JavaScript fundamentals and React patterns to full-stack Next.js architecture.</p>
+        <div class="lcard-topic-chips">
+          ${feTopics.map(t => `<span class="ltchip" style="background:${t.ib};color:${t.ic}">${t.icon} ${t.title}</span>`).join('')}
+        </div>
+        <div class="lcard-difficulty">
+          <span class="ldiff easy">● Easy</span>
+          <span class="ldiff med">● Medium</span>
+          <span class="ldiff hard">● Hard</span>
+        </div>
+        <div class="lcard-btn">Start Frontend <span>→</span></div>
       </div>
-      <div class="lcard" onclick="showSection('backend')">
-        <div class="lcard-icon">☕</div>
-        <div class="lcard-title">Backend</div>
-        <div class="lcard-topics">25 topics</div>
-        <div class="lcard-questions">681 Q&As</div>
-        <div class="lcard-desc">Java, Spring, AWS</div>
-        <div class="lcard-btn">Explore →</div>
+
+      <div class="lcard lcard-be" onclick="showSection('backend')">
+        <div class="lcard-header">
+          <div class="lcard-icon">☕</div>
+          <div class="lcard-meta">
+            <div class="lcard-title">Backend</div>
+            <div class="lcard-topics">${beTopics.length} topics</div>
+          </div>
+          <div class="lcard-qcount">${beQ}<span>Q&amp;As</span></div>
+        </div>
+        <p class="lcard-desc">Go deep on Java, Spring Boot, microservices, cloud infrastructure, databases, and system design.</p>
+        <div class="lcard-topic-chips">
+          ${beTopics.slice(0, 10).map(t => `<span class="ltchip" style="background:${t.ib};color:${t.ic}">${t.icon} ${t.title}</span>`).join('')}
+          <span class="ltchip ltchip-more">+${beTopics.length - 10} more</span>
+        </div>
+        <div class="lcard-difficulty">
+          <span class="ldiff easy">● Easy</span>
+          <span class="ldiff med">● Medium</span>
+          <span class="ldiff hard">● Hard</span>
+        </div>
+        <div class="lcard-btn">Start Backend <span>→</span></div>
       </div>
     </div>
   `;
@@ -257,7 +288,7 @@ function renderGrid() {
       // Backend section - filter by category groups
       const categoryTopics = [];
       for (const grp of BACKEND_CATEGORIES[curFilter]) {
-        categoryTopics.push(...topics.filter(t => t.grp === grp));
+        categoryTopics.push(...topics.filter(t => t.id === grp));
       }
       topics = categoryTopics;
     }
@@ -406,6 +437,7 @@ function goHome() {
     curTopic = null;
     curDiff = 'all';
     document.getElementById('topicView').classList.remove('on');
+    document.getElementById('homeView').classList.remove('off');
     window.scrollTo(0, 0);
     if (curSection === 'frontend' || curSection === 'backend') {
       history.pushState({ section: curSection }, '', '#' + curSection);
