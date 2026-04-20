@@ -298,6 +298,7 @@ function renderGrid() {
  * Activate topic view
  */
 function _activateTopic() {
+  document.getElementById('landingView').classList.add('off');
   document.getElementById('homeView').classList.add('off');
   document.getElementById('topicView').classList.add('on');
   window.scrollTo(0, 0);
@@ -342,14 +343,15 @@ function renderTopic() {
       (qs.length === 0
         ? '<div class="empty"><div class="empty-icon">📭</div><p>No questions for this filter.</p></div>'
         : qs.map(function(item, i) {
-            var isBm = bms.has(t.id + ':' + i);
+            var fullKey = item.id ? makeBookmarkKey(t.id, item) : null;
+            var isBm = fullKey ? bms.has(fullKey) : false;
             return '<div class="qi" id="qi-' + i + '">' +
               '<div class="qq" onclick="toggleQ(' + i + ')">' +
                 '<span class="qnum">' + String(i+1).padStart(2,'0') + '.</span>' +
                 '<span class="qtext">' + item.q + '</span>' +
                 '<div class="qright">' +
                   '<span class="dbadge ' + item.d + '">' + item.d.charAt(0).toUpperCase() + item.d.slice(1) + '</span>' +
-                  '<button class="bm-btn ' + (isBm ? 'bm-active' : '') + '" data-key="' + t.id + ':' + i + '" onclick="toggleBookmark(\'' + t.id + '\',' + i + ',event)" title="' + (isBm ? 'Remove bookmark' : 'Bookmark this question') + '">⭐</button>' +
+                  (fullKey ? '<button class="bm-btn ' + (isBm ? 'bm-active' : '') + '" data-key="' + fullKey + '" onclick="toggleBookmark(\'' + fullKey + '\',event)" title="' + (isBm ? 'Remove bookmark' : 'Bookmark this question') + '">⭐</button>' : '') +
                   '<span class="qchev">▼</span>' +
                 '</div>' +
               '</div>' +
