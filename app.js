@@ -11,7 +11,7 @@ const ALL_TOPICS = [
   SEC_DOCKER, SEC_AWS, SEC_K8S, SEC_OBS, SEC_PERF, SEC_SEC,
   SEC_GRPC, SEC_REACTIVE, SEC_CICD, SEC_AI,
   SEC_TESTING, SEC_PATTERNS, SEC_SOLID, SEC_MAVEN, SEC_DSA, SEC_REACT,
-  SEC_JS, SEC_NEXTJS
+  SEC_JS, SEC_NEXTJS, SEC_BEHAVIORAL
 ];
 
 let curSection = 'landing'; // 'landing', 'frontend', 'backend'
@@ -36,13 +36,13 @@ const SECTION_CONFIG = {
 
 const BACKEND_CATEGORIES = {
   core: ['java', 'multithreading', 'dsa', 'perf', 'maven', 'springboot', 'hibernate', 'restapi', 'security', 'grpc', 'reactive', 'testing'],
-  advanced: ['designpatterns', 'solid', 'microservices', 'hld', 'ai'],
+  advanced: ['designpatterns', 'solid', 'microservices', 'hld', 'ai', 'behavioral'],
   infra: ['sql', 'redis', 'docker', 'aws', 'k8s', 'kafka', 'obs', 'cicd']
 };
 
 const TOPIC_SECTIONS = {
   frontend: ['javascript', 'react', 'nextjs'],
-  backend: ['java', 'springboot', 'hibernate', 'multithreading', 'sql', 'restapi', 'redis', 'kafka', 'hld', 'microservices', 'docker', 'aws', 'k8s', 'obs', 'perf', 'security', 'grpc', 'reactive', 'cicd', 'ai', 'testing', 'designpatterns', 'solid', 'maven', 'dsa']
+  backend: ['java', 'springboot', 'hibernate', 'multithreading', 'sql', 'restapi', 'redis', 'kafka', 'hld', 'microservices', 'docker', 'aws', 'k8s', 'obs', 'perf', 'security', 'grpc', 'reactive', 'cicd', 'ai', 'testing', 'designpatterns', 'solid', 'maven', 'dsa', 'behavioral']
 };
 
 // ── localStorage HELPERS ──────────────────────────────────────────────────

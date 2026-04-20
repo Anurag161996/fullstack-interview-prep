@@ -345,9 +345,9 @@ body.light .qopt.medium-opt.on{background:rgba(234,108,10,.12);border-color:rgba
 body.light .qopt.hard-opt.on{background:rgba(220,38,38,.12);border-color:rgba(220,38,38,.45);color:#dc2626;}
 
 /* Bookmark button */
-body.light .bm-btn{color:var(--t3);opacity:0.7;}
+body.light .bm-btn{color:#a0a0c0;opacity:1;}
 body.light .bm-btn:hover{opacity:1;color:var(--y);}
-body.light .bm-btn.bm-active{color:var(--y);opacity:1;}
+body.light .bm-btn.bm-active{color:var(--y);opacity:1;filter:drop-shadow(0 0 3px rgba(202,138,4,.4));}
 
 /* Bookmarks view */
 body.light .bm-group{background:#fff;border:1px solid rgba(0,0,0,0.09);border-radius:14px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,0.05);margin-bottom:16px;}
