@@ -165,6 +165,7 @@ function capitalize(s) {
 // ── APP INITIALIZATION ────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', function() {
   initTheme();
+  migrateBookmarks();
   updateStats();
   updateBmBadge();
 
